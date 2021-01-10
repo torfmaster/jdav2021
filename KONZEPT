@@ -1,0 +1,27 @@
+Ausbaustufe: Minimalistische Funktionalität
+ - reiner webservice (kein Frontend)
+ - Alles im Arbeitsspeicher
+ - einfachste Funktionalität
+  - eintragen von Lauf-Kilometern an einem Tag
+  - ausgeben lassen von Lauf-Kilometern
+  - Summieren von Lauf-Kilometern
+
+Endpunkte:
+put http://127.0.0.1:9001/distanz/laufen/ {"kilometer": 20} -> entryId
+get http://127.0.0.1:9001/distanz/laufen/{entryId}
+get http://127.0.0.1:9001/distanz/laufen/ -> Liste aller Kilomter
+get http://127.0.0.1:9001/distanz/laufen/sum
+
+Weitere Ausbaustufen
+Nutzerverwaltung
+Kilometerverwaltung pro Nutzer
+Tests
+Statistik (Bestenliste)
+Datenbank 
+---
+irgendwann dann: Frontend
+
+
+
+
+
