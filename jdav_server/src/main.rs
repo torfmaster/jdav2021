@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
-use std::{convert::Infallible, sync::Arc};
+use std::{collections::HashMap, convert::Infallible, sync::Arc};
 use tokio::sync::Mutex;
+use uuid::Uuid;
 use warp::{http, Filter};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -8,9 +9,9 @@ struct Kilometer {
     pub kilometers: f32,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 struct Id {
-    pub id: usize,
+    pub id: Uuid,
 }
 #[derive(Debug, Deserialize, Serialize, Clone)]
 struct KilometerEntry {
@@ -18,11 +19,13 @@ struct KilometerEntry {
     pub kilometers: Kilometer,
 }
 
-type Database = Arc<Mutex<Vec<KilometerEntry>>>;
+type UserKey = String;
+type DatabaseModel = HashMap<UserKey, Vec<KilometerEntry>>;
+type Database = Arc<Mutex<DatabaseModel>>;
 
 #[tokio::main]
 async fn main() {
-    let database = Arc::new(Mutex::new(Vec::<KilometerEntry>::new()));
+    let database = Arc::new(Mutex::new(HashMap::new()));
     // GET /hello/warp => 200 OK with body "Hello, warp!"
     let hello = warp::path!("hello" / String)
         .and(with_database(database.clone()))
@@ -35,9 +38,7 @@ async fn main() {
         .and_then(create_kilometer_entry);
 
     let retrieve_entry = warp::get()
-        .and(warp::path("distanz"))
-        .and(warp::path("laufen"))
-        .and(warp::path::end())
+        .and(warp::path!("distanz" / String / "laufen"))
         .and(json_kilometer_retrieve())
         .and(with_database(database.clone()))
         .and_then(retrieve_kilometer_entry);
@@ -49,7 +50,7 @@ async fn main() {
         .and_then(retrieve_kilometer_all);
 
     let retrieve_sum = warp::get()
-        .and(warp::path!("distanz" / String / "laufen"))
+        .and(warp::path!("distanz" / String / "laufen" / "sum"))
         .and(with_database(database.clone()))
         .and_then(retrieve_kilometer_sum);
 
@@ -68,15 +69,26 @@ async fn create_kilometer_entry(
     database: Database,
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let mut db = database.lock().await;
-    let db_length: usize = db.len();
-    let entry: KilometerEntry = KilometerEntry {
-        id: Id { id: db_length },
+    let new_id = Uuid::new_v4();
+    let new_entry: KilometerEntry = KilometerEntry {
+        id: Id { id: new_id },
         kilometers: kilometer,
     };
-    db.push(entry);
+
+    let entries_for_user = db.get_mut(&_user);
+    match entries_for_user {
+        Some(entries_for_user) => {
+            entries_for_user.push(new_entry);
+        }
+        None => {
+            let mut map = Vec::new();
+            map.push(new_entry);
+            db.insert(_user, map);
+        }
+    }
 
     Ok(warp::reply::with_status(
-        db_length.to_string(),
+        new_id.to_string(),
         http::StatusCode::CREATED,
     ))
 }
@@ -86,18 +98,28 @@ fn json_kilometer_entry() -> impl Filter<Extract = (Kilometer,), Error = warp::R
 }
 
 async fn retrieve_kilometer_entry(
+    user: String,
     ident: Id,
     database: Database,
 ) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
-    let db = database.lock().await;
-    if ident.id < db.len() {
-        let entry = db.get(ident.id);
-        Ok(Box::new(warp::reply::json(&entry)))
-    } else {
-        Ok(Box::new(warp::reply::with_status(
-            format!("no entry with id {}", ident.id),
+    let mut db = database.lock().await;
+    let entries_for_user = db.get_mut(&user);
+    match entries_for_user {
+        Some(entries_for_user) => {
+            for entry in entries_for_user.iter() {
+                if entry.id == ident {
+                    return Ok(Box::new(warp::reply::json(&entry)));
+                }
+            }
+            Ok(Box::new(warp::reply::with_status(
+                format!("no entry with id {}", ident.id),
+                http::StatusCode::NOT_FOUND,
+            )))
+        }
+        None => Ok(Box::new(warp::reply::with_status(
+            format!("no user found with id {}", user),
             http::StatusCode::NOT_FOUND,
-        )))
+        ))),
     }
 }
 
@@ -108,22 +130,38 @@ fn json_kilometer_retrieve() -> impl Filter<Extract = (Id,), Error = warp::Rejec
 async fn retrieve_kilometer_all(
     _user_id: String,
     database: Database,
-) -> Result<impl warp::Reply, warp::Rejection> {
+) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
     let db = database.lock().await;
-
-    Ok(warp::reply::json(&db.to_vec()))
+    let entry_per_user = db.get(&_user_id);
+    if let Some(entry_per_user) = entry_per_user {
+        Ok(Box::new(warp::reply::json(entry_per_user)))
+    } else {
+        Ok(Box::new(warp::reply::with_status(
+            format!("no user found with id {}", _user_id),
+            http::StatusCode::NOT_FOUND,
+        )))
+    }
 }
 
 async fn retrieve_kilometer_sum(
-    _user_id: String,
+    user: String,
     database: Database,
-) -> Result<impl warp::Reply, warp::Rejection> {
+) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
     let db = database.lock().await;
     let mut sum: f32 = 0.0;
-    for i in db.to_vec() {
-        sum += i.kilometers.kilometers;
+    let entries_for_user = db.get(&user);
+    match entries_for_user {
+        Some(entries_for_user) => {
+            for entry in entries_for_user.iter() {
+                sum += entry.kilometers.kilometers;
+            }
+            Ok(Box::new(warp::reply::json(&sum)))
+        }
+        None => Ok(Box::new(warp::reply::with_status(
+            format!("user {} not found", user),
+            http::StatusCode::NOT_FOUND,
+        ))),
     }
-    Ok(warp::reply::json(&sum))
 }
 
 fn with_database(

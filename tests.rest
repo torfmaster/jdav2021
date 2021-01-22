@@ -8,3 +8,7 @@ PUT http://localhost:8080/distanz/0/laufen
 
 GET http://localhost:8080/distanz/0/laufen
 
+
+#### Summe
+GET http://localhost:8080/distanz/0/laufen/sum
+
