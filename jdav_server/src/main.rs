@@ -21,15 +21,48 @@ struct KilometerEntry {
 
 type UserKey = String;
 type DatabaseModel = HashMap<UserKey, Vec<KilometerEntry>>;
-type Database = Arc<Mutex<DatabaseModel>>;
+
+#[derive(Clone)]
+struct Database {
+    pub database: Arc<Mutex<DatabaseModel>>,
+}
+
+impl Database {
+    async fn create_kilometer_entry(&self, kilometer: Kilometer, user: String) -> Uuid {
+        let mut db = self.database.lock().await;
+        let new_id = Uuid::new_v4();
+        let new_entry: KilometerEntry = KilometerEntry {
+            id: Id { id: new_id },
+            kilometers: kilometer,
+        };
+
+        let entries_for_user = db.get_mut(&user);
+        match entries_for_user {
+            Some(entries_for_user) => {
+                entries_for_user.push(new_entry);
+            }
+            None => {
+                let mut map = Vec::new();
+                map.push(new_entry);
+                db.insert(user, map);
+            }
+        }
+
+        new_id
+    }
+}
+
+impl Default for Database {
+    fn default() -> Self {
+        Database {
+            database: Arc::new(Mutex::new(HashMap::new())),
+        }
+    }
+}
 
 #[tokio::main]
 async fn main() {
-    let database = Arc::new(Mutex::new(HashMap::new()));
-    // GET /hello/warp => 200 OK with body "Hello, warp!"
-    let hello = warp::path!("hello" / String)
-        .and(with_database(database.clone()))
-        .and_then(responder);
+    let database: Database = Default::default();
 
     let create_entry = warp::put()
         .and(warp::path!("distanz" / String / "laufen"))
@@ -54,8 +87,8 @@ async fn main() {
         .and(with_database(database.clone()))
         .and_then(retrieve_kilometer_sum);
 
-    let routes = hello
-        .or(create_entry)
+    let routes = 
+        create_entry
         .or(retrieve_entry)
         .or(retrieve_all)
         .or(retrieve_sum);
@@ -68,7 +101,7 @@ async fn create_kilometer_entry(
     kilometer: Kilometer,
     database: Database,
 ) -> Result<impl warp::Reply, warp::Rejection> {
-    let mut db = database.lock().await;
+    let mut db = database.database.lock().await;
     let new_id = Uuid::new_v4();
     let new_entry: KilometerEntry = KilometerEntry {
         id: Id { id: new_id },
@@ -102,7 +135,7 @@ async fn retrieve_kilometer_entry(
     ident: Id,
     database: Database,
 ) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
-    let mut db = database.lock().await;
+    let mut db = database.database.lock().await;
     let entries_for_user = db.get_mut(&user);
     match entries_for_user {
         Some(entries_for_user) => {
@@ -131,7 +164,7 @@ async fn retrieve_kilometer_all(
     _user_id: String,
     database: Database,
 ) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
-    let db = database.lock().await;
+    let db = database.database.lock().await;
     let entry_per_user = db.get(&_user_id);
     if let Some(entry_per_user) = entry_per_user {
         Ok(Box::new(warp::reply::json(entry_per_user)))
@@ -147,7 +180,7 @@ async fn retrieve_kilometer_sum(
     user: String,
     database: Database,
 ) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
-    let db = database.lock().await;
+    let db = database.database.lock().await;
     let mut sum: f32 = 0.0;
     let entries_for_user = db.get(&user);
     match entries_for_user {
@@ -168,11 +201,4 @@ fn with_database(
     database: Database,
 ) -> impl Filter<Extract = (Database,), Error = Infallible> + Clone {
     warp::any().map(move || database.clone())
-}
-
-async fn responder(name: String, database: Database) -> Result<impl warp::Reply, Infallible> {
-    let wurst = database.lock().await;
-    println!("{:?}", *wurst);
-
-    Ok(format!("Hello, {}!", name))
 }
