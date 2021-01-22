@@ -29,9 +29,7 @@ async fn main() {
         .and_then(responder);
 
     let create_entry = warp::put()
-        .and(warp::path("distanz"))
-        .and(warp::path("laufen"))
-        .and(warp::path::end())
+        .and(warp::path!("distanz" / String / "laufen"))
         .and(json_kilometer_entry())
         .and(with_database(database.clone()))
         .and_then(create_kilometer_entry);
@@ -45,17 +43,13 @@ async fn main() {
         .and_then(retrieve_kilometer_entry);
 
     let retrieve_all = warp::get()
-        .and(warp::path("distanz"))
-        .and(warp::path("laufen"))
+        .and(warp::path!("distanz" / String / "laufen"))
         .and(warp::path::end())
         .and(with_database(database.clone()))
         .and_then(retrieve_kilometer_all);
 
     let retrieve_sum = warp::get()
-        .and(warp::path("distanz"))
-        .and(warp::path("laufen"))
-        .and(warp::path("sum"))
-        .and(warp::path::end())
+        .and(warp::path!("distanz" / String / "laufen"))
         .and(with_database(database.clone()))
         .and_then(retrieve_kilometer_sum);
 
@@ -69,6 +63,7 @@ async fn main() {
 }
 
 async fn create_kilometer_entry(
+    _user: String,
     kilometer: Kilometer,
     database: Database,
 ) -> Result<impl warp::Reply, warp::Rejection> {
@@ -110,13 +105,19 @@ fn json_kilometer_retrieve() -> impl Filter<Extract = (Id,), Error = warp::Rejec
     warp::body::content_length_limit(1024 * 16).and(warp::body::json())
 }
 
-async fn retrieve_kilometer_all(database: Database) -> Result<impl warp::Reply, warp::Rejection> {
+async fn retrieve_kilometer_all(
+    _user_id: String,
+    database: Database,
+) -> Result<impl warp::Reply, warp::Rejection> {
     let db = database.lock().await;
 
     Ok(warp::reply::json(&db.to_vec()))
 }
 
-async fn retrieve_kilometer_sum(database: Database) -> Result<impl warp::Reply, warp::Rejection> {
+async fn retrieve_kilometer_sum(
+    _user_id: String,
+    database: Database,
+) -> Result<impl warp::Reply, warp::Rejection> {
     let db = database.lock().await;
     let mut sum: f32 = 0.0;
     for i in db.to_vec() {
