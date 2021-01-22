@@ -5,8 +5,16 @@ PUT http://localhost:8080/distanz/0/laufen
 }
 
 ####
+PUT http://localhost:8080/distanz/1/laufen
 
+{
+  "kilometers": 1.4
+}
+
+####
 GET http://localhost:8080/distanz/0/laufen
+####
+GET http://localhost:8080/distanz/1/laufen
 
 
 #### Summe
