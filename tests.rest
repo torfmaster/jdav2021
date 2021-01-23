@@ -12,9 +12,9 @@ PUT http://localhost:8080/distanz/1/laufen
 }
 
 ####
-GET http://localhost:8080/distanz/0/laufen
+GET http://localhost:8080/distanz/0/laufen/all
 ####
-GET http://localhost:8080/distanz/1/laufen
+GET http://localhost:8080/distanz/1/laufen/all
 
 
 #### Summe

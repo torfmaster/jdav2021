@@ -44,7 +44,7 @@ fn json_kilometer_retrieve() -> impl Filter<Extract = (Id,), Error = warp::Rejec
 fn retrieve_all(
     db: Database,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("distanz" / String / "laufen")
+    warp::path!("distanz" / String / "laufen" / "all")
         .and(warp::path::end())
         .and(with_database(db.clone()))
         .and_then(handlers::retrieve_kilometer_all)
