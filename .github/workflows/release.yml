@@ -43,4 +43,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: armv7 artifact
-          path: target/release/jdav_server
+          path: target/armv7-unknown-linux-gnueabihf/release/jdav_server
