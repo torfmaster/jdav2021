@@ -8,6 +8,6 @@ async fn main() {
     let database = db::init_db();
 
     warp::serve(routes::routes(database.clone()))
-        .run(([127, 0, 0, 1], 8080))
+        .run(([0, 0, 0, 0], 8080))
         .await;
 }
