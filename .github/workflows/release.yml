@@ -23,6 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get install gcc-arm-linux-gnueabihf
+          sudo apt install sshpass
           rustup target add armv7-unknown-linux-gnueabihf
 
       - name: Build Artifact for amd64
@@ -44,3 +45,9 @@ jobs:
         with:
           name: armv7 artifact
           path: target/armv7-unknown-linux-gnueabihf/release/jdav_server
+
+      - name: Deploy Server
+        run: |
+          sshpass -p $SSH_PASSWORD scp target/armv7-unknown-linux-gnueabihf/release/jdav_server deploy@kebes.dnshome.de:/home/deploy
+          sshpass -p $SSH_PASSWORD ssh deploy@kebes.dnshome.de "killall -9 jdav_server"
+          sshpass -p $SSH_PASSWORD ssh deploy@kebes.dnshome.de "./jdav_server"
