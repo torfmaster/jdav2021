@@ -33,7 +33,7 @@ impl Database {
                 db.insert(user, map);
             }
         }
-        self.save_database(db.clone()).await;
+        self.save_database(&db).await;
         new_id
     }
     pub async fn retrieve_kilometer_entry(
@@ -85,7 +85,7 @@ impl Database {
             }
         }
     }
-    async fn save_database(&self, db: DatabaseModel) {
+    async fn save_database(&self, db: &DatabaseModel) {
         //let db = self.database.lock().await;
         let file = File::create(DATABASE_FILENAME).await;
         match file {
@@ -106,16 +106,10 @@ impl Default for Database {
 }
 
 pub async fn init_db() -> Database {
-    let file = File::open(DATABASE_FILENAME).await;
-    match file {
-        Ok(json) => {
-            let data = from_reader(json.into_std().await).unwrap();
-            return Database {
-                database: Arc::new(Mutex::new(data)),
-            };
-        }
-        Err(_) => {
-            return Database::default();
-        }
-    }
+    let file = File::open(DATABASE_FILENAME).await.unwrap();
+
+    let data = from_reader(file.into_std().await).unwrap();
+    return Database {
+        database: Arc::new(Mutex::new(data)),
+    };
 }
