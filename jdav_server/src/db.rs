@@ -1,8 +1,13 @@
+use serde_json::{from_reader, to_writer};
 use std::{collections::HashMap, sync::Arc};
+use tokio::fs::File;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
 use crate::models::{DatabaseModel, Id, Kilometer, KilometerEntry};
+
+static DATABASE_FILENAME: &'static str = "./database.json";
+
 #[derive(Clone)]
 pub struct Database {
     pub database: Arc<Mutex<DatabaseModel>>,
@@ -28,7 +33,7 @@ impl Database {
                 db.insert(user, map);
             }
         }
-
+        self.save_database(&db).await;
         new_id
     }
     pub async fn retrieve_kilometer_entry(
@@ -80,6 +85,16 @@ impl Database {
             }
         }
     }
+    async fn save_database(&self, db: &DatabaseModel) {
+        //let db = self.database.lock().await;
+        let file = File::create(DATABASE_FILENAME).await;
+        match file {
+            Ok(json) => {
+                to_writer(json.into_std().await, &db.clone()).expect("error writing to file");
+            }
+            Err(_) => {}
+        }
+    }
 }
 
 impl Default for Database {
@@ -90,6 +105,11 @@ impl Default for Database {
     }
 }
 
-pub fn init_db() -> Database {
-    Database::default()
+pub async fn init_db() -> Database {
+    let file = File::open(DATABASE_FILENAME).await.unwrap();
+
+    let data = from_reader(file.into_std().await).unwrap();
+    return Database {
+        database: Arc::new(Mutex::new(data)),
+    };
 }
