@@ -5,7 +5,7 @@ mod routes;
 
 #[tokio::main]
 async fn main() {
-    let database = db::init_db();
+    let database = db::init_db().await;
 
     warp::serve(routes::routes(database.clone()))
         .run(([0, 0, 0, 0], 8080))
