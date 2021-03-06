@@ -17,7 +17,7 @@ impl Database {
             kilometers: kilometer,
         };
 
-        let entries_for_user = db.get_mut(&user);
+        let entries_for_user = db.entries.get_mut(&user);
         match entries_for_user {
             Some(entries_for_user) => {
                 entries_for_user.push(new_entry);
@@ -25,7 +25,7 @@ impl Database {
             None => {
                 let mut map = Vec::new();
                 map.push(new_entry);
-                db.insert(user, map);
+                db.entries.insert(user, map);
             }
         }
 
@@ -37,7 +37,7 @@ impl Database {
         user: String,
     ) -> Option<KilometerEntry> {
         let mut db = self.database.lock().await;
-        let entries_for_user = db.get_mut(&user);
+        let entries_for_user = db.entries.get_mut(&user);
         match entries_for_user {
             Some(entries_for_user) => {
                 for entry in entries_for_user.iter() {
@@ -54,7 +54,7 @@ impl Database {
     }
     pub async fn retrieve_kilometer_all(&self, user: String) -> Option<Vec<KilometerEntry>> {
         let mut db = self.database.lock().await;
-        let entries_for_user = db.get_mut(&user);
+        let entries_for_user = db.entries.get_mut(&user);
         match entries_for_user {
             Some(entries_for_user) => {
                 return Some(entries_for_user.clone());
@@ -66,7 +66,7 @@ impl Database {
     }
     pub async fn retrieve_kilometer_sum(&self, user: String) -> Option<Kilometer> {
         let db = self.database.lock().await;
-        let entries_for_user = db.get(&user);
+        let entries_for_user = db.entries.get(&user);
         match entries_for_user {
             Some(entries_for_user) => {
                 let mut sum: f32 = 0.0;
@@ -85,7 +85,7 @@ impl Database {
 impl Default for Database {
     fn default() -> Self {
         Database {
-            database: Arc::new(Mutex::new(HashMap::new())),
+            database: Arc::new(Mutex::new(DatabaseModel::default())),
         }
     }
 }
