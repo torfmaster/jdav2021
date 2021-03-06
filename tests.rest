@@ -1,7 +1,9 @@
-@host=http://localhost:8080
+@host=http://127.0.0.1:8080
 
 
+#### put
 PUT {{host}}/distanz/0/laufen
+Authorization: asdf
 
 {
   "kilometers": 1.5
@@ -20,7 +22,7 @@ GET {{host}}/distanz/0/laufen/all
 GET {{host}}/distanz/1/laufen/all
 
 #### Summe
-GET {{host}}/distanz/0/laufen/sum
+GET 127.0.0.1:8080/distanz/0/laufen/sum
 
 #### Summe
 GET {{host}}/distanz/1/laufen/sum

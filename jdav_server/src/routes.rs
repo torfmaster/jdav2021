@@ -23,6 +23,7 @@ fn create_entry(
     db: Database,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("distanz" / String / "laufen")
+        .and(warp::header::<String>("Authorization"))
         .and(warp::put())
         .and(json_kilometer_entry())
         .and(with_database(db.clone()))

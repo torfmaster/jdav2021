@@ -7,6 +7,7 @@ use crate::models::{Id, Kilometer, KilometerEntry};
 
 pub async fn create_kilometer_entry(
     _user: String,
+    token: String,
     kilometer: Kilometer,
     database: Database,
 ) -> Result<impl warp::Reply, Infallible> {

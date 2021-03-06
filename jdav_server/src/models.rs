@@ -16,5 +16,28 @@ pub struct KilometerEntry {
     pub kilometers: Kilometer,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct User {
+    pub name: Id,
+    pub hash: String,
+    pub salt: String,
+}
+
 pub type UserKey = String;
-pub type DatabaseModel = HashMap<UserKey, Vec<KilometerEntry>>;
+pub type EntryDatabaseModel = HashMap<UserKey, Vec<KilometerEntry>>;
+pub type UserDatabaseModel = HashMap<UserKey, User>;
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct DatabaseModel {
+    pub entries: EntryDatabaseModel,
+    pub users: UserDatabaseModel,
+}
+
+impl Default for DatabaseModel {
+    fn default() -> Self {
+        DatabaseModel {
+            entries: HashMap::new(),
+            users: HashMap::new(),
+        }
+    }
+}
