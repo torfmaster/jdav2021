@@ -1,0 +1,49 @@
+name: Artifacts
+
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [main]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get install gcc-arm-linux-gnueabihf
+          sudo apt install sshpass
+          rustup target add armv7-unknown-linux-gnueabihf
+
+      - name: Build Cache for raspberry pi
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build Artifact for raspberry pi
+        run: |
+          cargo build --target armv7-unknown-linux-gnueabihf --release
+
+      - name: Deploy Server
+        shell: bash
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          sshpass -e ssh -o StrictHostKeyChecking=no deploy@kebes.dnshome.de "killall -9 jdav_server" || true
+          sshpass -e scp -o StrictHostKeyChecking=no target/armv7-unknown-linux-gnueabihf/release/jdav_server deploy@kebes.dnshome.de:/home/deploy 
+          sshpass -e ssh -o StrictHostKeyChecking=no deploy@kebes.dnshome.de "nohup ./jdav_server > foo.out 2> foo.err < /dev/null &"
