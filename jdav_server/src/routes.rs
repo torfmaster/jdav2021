@@ -8,7 +8,10 @@ use crate::models::{Id, Kilometer};
 pub fn routes(
     db: Database,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    create_entry(db.clone())
+    let static_content = warp::get().and(warp::fs::dir("../jdav_client/dist"));
+
+    static_content
+        .or(create_entry(db.clone()))
         .or(retrieve_entry(db.clone()))
         .or(retrieve_all(db.clone()))
         .or(retrieve_sum(db.clone()))

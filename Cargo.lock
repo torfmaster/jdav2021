@@ -204,8 +204,12 @@ dependencies = [
  "serde",
  "serde_json",
  "shared",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
  "yew",
  "yew_styles",
+ "yewtil",
 ]
 
 [[package]]
@@ -1070,6 +1074,10 @@ dependencies = [
 [[package]]
 name = "shared"
 version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "signal-hook-registry"
@@ -1437,6 +1445,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ee1280240b7c461d6a0071313e08f34a60b0365f14260362e5a2b17d1d31aa7"
 dependencies = [
  "cfg-if 1.0.0",
+ "serde",
+ "serde_json",
  "wasm-bindgen-macro",
 ]
 
@@ -1641,4 +1651,20 @@ dependencies = [
  "web-sys",
  "yew",
  "yew_assets",
+]
+
+[[package]]
+name = "yewtil"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "003f4f533ee696c1f69d753db2c66096dec5700a93bd0bc801ab5891fec041c6"
+dependencies = [
+ "futures",
+ "log",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "yew",
 ]
