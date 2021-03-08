@@ -8,9 +8,9 @@ pub struct BackendRequest {
 }
 
 impl BackendRequest {
-    pub fn new(distance: String) -> Self {
+    pub fn new(distance: String, username: String) -> Self {
         BackendRequest {
-            id: "wurst".to_owned(),
+            id: username,
             payload: Kilometer {
                 kilometers: distance.parse::<f32>().unwrap(),
             },
@@ -24,7 +24,7 @@ impl FetchRequest for BackendRequest {
     type Format = Json;
 
     fn url(&self) -> String {
-        format!("/distanz/someone/laufen")
+        format!("/distanz/{}/laufen", self.id)
     }
 
     fn method(&self) -> MethodBody<Self::RequestBody> {

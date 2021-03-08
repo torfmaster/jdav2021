@@ -18,6 +18,7 @@ struct Model {
     api: Fetch<BackendRequest, String>,
     link: ComponentLink<Self>,
     distance: String,
+    user: String,
 }
 
 pub enum Msg {
@@ -25,6 +26,7 @@ pub enum Msg {
     PutDistance,
     Nothing,
     SetDistanceField(String),
+    SetUserField(String),
 }
 
 impl Component for Model {
@@ -36,6 +38,7 @@ impl Component for Model {
             api: Default::default(),
             link,
             distance: "".to_owned(),
+            user: "".to_owned(),
         }
     }
 
@@ -46,7 +49,10 @@ impl Component for Model {
                 true
             }
             Msg::PutDistance => {
-                self.api.set_req(BackendRequest::new(self.distance.clone()));
+                self.api.set_req(BackendRequest::new(
+                    self.distance.clone(),
+                    self.user.clone(),
+                ));
                 self.link.send_future(self.api.fetch(Msg::SetApiFetchState));
                 self.link
                     .send_message(Msg::SetApiFetchState(FetchAction::Fetching));
@@ -55,6 +61,10 @@ impl Component for Model {
             Msg::Nothing => false,
             Msg::SetDistanceField(value) => {
                 self.distance = value;
+                false
+            }
+            Msg::SetUserField(value) => {
+                self.user = value;
                 false
             }
         }
@@ -85,6 +95,14 @@ impl Component for Model {
             input_size=Size::Medium
             oninput_signal = self.link.callback(|e: InputData| Msg::SetDistanceField(e.value))
             placeholder="Menge"
+            underline=false
+        />
+        <FormInput
+            input_type=InputType::Text
+            input_palette=Palette::Standard
+            input_size=Size::Medium
+            oninput_signal = self.link.callback(|e: InputData| Msg::SetUserField(e.value))
+            placeholder="Username"
             underline=false
         />
         <Button
