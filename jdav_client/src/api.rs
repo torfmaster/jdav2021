@@ -5,15 +5,17 @@ use yewtil::fetch::{FetchRequest, Json, MethodBody};
 pub struct BackendRequest {
     pub id: String,
     pub payload: Kilometer,
+    pub kind: String,
 }
 
 impl BackendRequest {
-    pub fn new(distance: String, username: String) -> Self {
+    pub fn new(distance: String, username: String, kind: String) -> Self {
         BackendRequest {
             id: username,
             payload: Kilometer {
                 kilometers: distance.parse::<f32>().unwrap(),
             },
+            kind,
         }
     }
 }
@@ -24,7 +26,7 @@ impl FetchRequest for BackendRequest {
     type Format = Json;
 
     fn url(&self) -> String {
-        format!("/distanz/{}/laufen", self.id)
+        format!("/distanz/{}/{}", self.id, self.kind)
     }
 
     fn method(&self) -> MethodBody<Self::RequestBody> {

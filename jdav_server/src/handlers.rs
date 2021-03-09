@@ -1,6 +1,6 @@
 use std::convert::Infallible;
 
-use warp::{self, http::StatusCode};
+use warp::{self, http::StatusCode, Reply};
 
 use crate::db::Database;
 use crate::models::{Id, Kilometer, KilometerEntry};
@@ -12,10 +12,7 @@ pub async fn create_kilometer_entry(
 ) -> Result<impl warp::Reply, Infallible> {
     let id = database.create_kilometer_entry(kilometer, _user).await;
 
-    Ok(warp::reply::with_status(
-        id.to_string(),
-        StatusCode::CREATED,
-    ))
+    Ok(warp::reply::json(&id.to_string()))
 }
 
 pub async fn retrieve_kilometer_entry(

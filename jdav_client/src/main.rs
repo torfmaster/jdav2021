@@ -1,6 +1,10 @@
-#![recursion_limit = "256"]
+#![recursion_limit = "512"]
+
 use api::BackendRequest;
-use yew::{html, Component, ComponentLink, Html, InputData, ShouldRender};
+use yew::{
+    html, services::ConsoleService, ChangeData, Component, ComponentLink, Html, InputData,
+    ShouldRender,
+};
 use yew_styles::button::Button;
 use yew_styles::forms::form_input::FormInput;
 use yew_styles::forms::form_input::InputType;
@@ -9,7 +13,7 @@ use yew_styles::modal::Modal;
 use yew_styles::styles::Palette;
 use yew_styles::styles::Size;
 use yew_styles::styles::Style;
-use yewtil::fetch::{Fetch, FetchAction, FetchState};
+use yewtil::fetch::{Fetch, FetchAction};
 use yewtil::future::LinkFuture;
 
 mod api;
@@ -19,14 +23,19 @@ struct Model {
     link: ComponentLink<Self>,
     distance: String,
     user: String,
+    kind: String,
+    add_entry_modal_open: bool,
 }
 
+#[derive(Debug)]
 pub enum Msg {
     SetApiFetchState(FetchAction<String>),
     PutDistance,
     Nothing,
     SetDistanceField(String),
     SetUserField(String),
+    SetKindField(String),
+    CloseConfirmationModal,
 }
 
 impl Component for Model {
@@ -39,12 +48,22 @@ impl Component for Model {
             link,
             distance: "".to_owned(),
             user: "".to_owned(),
+            kind: "laufen".to_owned(),
+            add_entry_modal_open: true,
         }
     }
 
     fn update(&mut self, message: Self::Message) -> bool {
+        ConsoleService::info(&format!("Update: {:?}", message));
         match message {
             Msg::SetApiFetchState(fetch_state) => {
+                match fetch_state {
+                    FetchAction::Fetched(_) => {
+                        self.add_entry_modal_open = false;
+                    }
+                    FetchAction::Failed(_) => {}
+                    _ => {}
+                }
                 self.api.apply(fetch_state);
                 true
             }
@@ -52,6 +71,7 @@ impl Component for Model {
                 self.api.set_req(BackendRequest::new(
                     self.distance.clone(),
                     self.user.clone(),
+                    self.kind.clone(),
                 ));
                 self.link.send_future(self.api.fetch(Msg::SetApiFetchState));
                 self.link
@@ -67,20 +87,29 @@ impl Component for Model {
                 self.user = value;
                 false
             }
+            Msg::SetKindField(value) => {
+                self.kind = value;
+                false
+            }
+            Msg::CloseConfirmationModal => {
+                self.add_entry_modal_open = false;
+                false
+            }
         }
     }
 
     fn view(&self) -> Html {
-        let data = match self.api.as_ref().state() {
-            FetchState::Fetched(data) => Some(data),
-            _ => None,
+        let select_callback = |e: ChangeData| match e {
+            ChangeData::Value(_) => Msg::Nothing,
+            ChangeData::Select(v) => Msg::SetKindField(v.value()),
+            ChangeData::Files(_) => Msg::Nothing,
         };
 
         let entry = html! {
         <div class="body-content">
         <FormSelect
             select_size=Size::Medium
-            onchange_signal = self.link.callback(|_| Msg::Nothing )
+            onchange_signal = self.link.callback(select_callback)
             options=html!{
                 <>
                 <option value="laufen">{"Laufen"}</option>
@@ -122,7 +151,7 @@ impl Component for Model {
             body=entry
             body_style=Style::Outline
             body_palette=Palette::Link
-            is_open=true
+            is_open=self.add_entry_modal_open
             onclick_signal= self.link.callback(|_|  Msg::Nothing )
             onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
             auto_focus=false
