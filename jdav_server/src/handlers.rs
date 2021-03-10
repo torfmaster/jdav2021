@@ -3,17 +3,47 @@ use std::convert::Infallible;
 use warp::{self, http::StatusCode};
 
 use crate::db::Database;
-use crate::models::{Id, Kilometer, KilometerEntry};
+use crate::models::{Id, Kilometer, KilometerEntry, UserAuth};
+
+pub async fn create_user(
+    new_user: UserAuth,
+    database: Database,
+) -> Result<impl warp::Reply, Infallible> {
+    if database.create_user(new_user).await {
+        Ok(warp::reply::with_status(
+            "user created",
+            StatusCode::CREATED,
+        ))
+    } else {
+        Ok(warp::reply::with_status(
+            "error creating user",
+            StatusCode::CREATED,
+        ))
+    }
+}
+
+pub async fn authenticate_user(
+    user_auth: UserAuth,
+    database: Database,
+) -> Result<impl warp::Reply, Infallible> {
+    if database.authenticate_user(user_auth).await {
+        Ok(warp::reply::with_status("user auth'd", StatusCode::CREATED))
+    } else {
+        Ok(warp::reply::with_status(
+            "user not auth'd - wrong name or password",
+            StatusCode::CREATED,
+        ))
+    }
+}
 
 pub async fn create_kilometer_entry(
     _user: String,
-    token: String,
+    pass: String,
     kilometer: Kilometer,
     database: Database,
 ) -> Result<impl warp::Reply, Infallible> {
     let id = database.create_kilometer_entry(kilometer, _user).await;
 
-    println!("{}", token);
     Ok(warp::reply::with_status(
         id.to_string(),
         StatusCode::CREATED,
@@ -22,6 +52,7 @@ pub async fn create_kilometer_entry(
 
 pub async fn retrieve_kilometer_entry(
     user: String,
+    pass: String,
     ident: Id,
     database: Database,
 ) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
@@ -41,6 +72,7 @@ pub async fn retrieve_kilometer_entry(
 
 pub async fn retrieve_kilometer_all(
     user: String,
+    pass: String,
     database: Database,
 ) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
     let entries = database.retrieve_kilometer_all(user.clone()).await;
@@ -55,6 +87,7 @@ pub async fn retrieve_kilometer_all(
 
 pub async fn retrieve_kilometer_sum(
     user: String,
+    pass: String,
     database: Database,
 ) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
     let sum = database.retrieve_kilometer_sum(user.clone()).await;
