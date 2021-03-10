@@ -1,4 +1,5 @@
 use crate::api::BackendRequest;
+use yew::Properties;
 use yew::{
     html, services::ConsoleService, ChangeData, Component, ComponentLink, Html, InputData,
     ShouldRender,
@@ -18,9 +19,14 @@ pub struct NewEntry {
     api: Fetch<BackendRequest, String>,
     link: ComponentLink<Self>,
     distance: String,
-    user: String,
     kind: String,
     add_entry_modal_open: bool,
+    props: NewEntryProps,
+}
+
+#[derive(Clone, Properties, PartialEq)]
+pub struct NewEntryProps {
+    pub username: String,
 }
 
 #[derive(Debug)]
@@ -36,16 +42,16 @@ pub enum Msg {
 
 impl Component for NewEntry {
     type Message = Msg;
-    type Properties = ();
+    type Properties = NewEntryProps;
 
-    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         NewEntry {
             api: Default::default(),
             link,
             distance: "".to_owned(),
-            user: "".to_owned(),
             kind: "laufen".to_owned(),
             add_entry_modal_open: true,
+            props,
         }
     }
 
@@ -66,7 +72,7 @@ impl Component for NewEntry {
             Msg::PutDistance => {
                 self.api.set_req(BackendRequest::new(
                     self.distance.clone(),
-                    self.user.clone(),
+                    self.props.username.clone(),
                     self.kind.clone(),
                 ));
                 self.link.send_future(self.api.fetch(Msg::SetApiFetchState));
@@ -80,7 +86,7 @@ impl Component for NewEntry {
                 false
             }
             Msg::SetUserField(value) => {
-                self.user = value;
+                self.props.username = value;
                 false
             }
             Msg::SetKindField(value) => {
@@ -122,14 +128,6 @@ impl Component for NewEntry {
             placeholder="Menge"
             underline=false
         />
-        <FormInput
-            input_type=InputType::Text
-            input_palette=Palette::Standard
-            input_size=Size::Medium
-            oninput_signal = self.link.callback(|e: InputData| Msg::SetUserField(e.value))
-            placeholder="Username"
-            underline=false
-        />
         <Button
             onclick_signal=self.link.callback(move |_| Msg::PutDistance )
             button_palette=Palette::Standard
@@ -155,7 +153,12 @@ impl Component for NewEntry {
         }
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        false
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        if self.props != props {
+            self.props = props;
+            true
+        } else {
+            false
+        }
     }
 }
