@@ -1,6 +1,7 @@
 use yew::Properties;
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
+use crate::highscore::HighScore;
 use crate::new_entry::NewEntry;
 use yew_styles::button::Button;
 use yew_styles::forms::form_input::FormInput;
@@ -16,13 +17,15 @@ pub struct OverviewProps {
 }
 pub enum Msg {
     OpenNewEntry,
-    CloseNewEntry,
+    OpenHighScore,
+    CloseAction,
     Nothing,
 }
 
 enum CurrentAction {
     Nothing,
     NewEntry,
+    HighScore,
 }
 
 pub struct Overview {
@@ -50,15 +53,20 @@ impl Component for Overview {
                 true
             }
             Msg::Nothing => false,
-            Msg::CloseNewEntry => {
+            Msg::CloseAction => {
                 self.current_action = CurrentAction::Nothing;
+                true
+            }
+            Msg::OpenHighScore => {
+                self.current_action = CurrentAction::HighScore;
                 true
             }
         }
     }
 
     fn view(&self) -> Html {
-        let close_action = self.link.callback(|_| Msg::CloseNewEntry);
+        let close_action = self.link.callback(|_| Msg::CloseAction);
+
         let entry = html! {
         <div class="body-content">
         <Button
@@ -66,6 +74,11 @@ impl Component for Overview {
             button_palette=Palette::Standard
             button_style=Style::Outline
         >{"Neuer Eintrag"}</Button>
+        <Button
+            onclick_signal=self.link.callback(move |_| Msg::OpenHighScore )
+            button_palette=Palette::Standard
+            button_style=Style::Outline
+        >{"Highscore"}</Button>
         </div>
         };
 
@@ -90,6 +103,14 @@ impl Component for Overview {
             CurrentAction::NewEntry => {
                 html! {
                     <NewEntry
+                      username={self.props.username.clone()}
+                      close_action={close_action}
+                    />
+                }
+            }
+            CurrentAction::HighScore => {
+                html! {
+                    <HighScore
                       username={self.props.username.clone()}
                       close_action={close_action}
                     />

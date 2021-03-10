@@ -4,6 +4,7 @@ use yew::{html, Component, ComponentLink, Html, ShouldRender};
 pub mod api;
 pub mod new_entry;
 pub mod overview;
+pub mod highscore;
 
 use crate::overview::Overview;
 use new_entry::NewEntry;
