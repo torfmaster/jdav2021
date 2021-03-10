@@ -9,8 +9,10 @@ pub fn routes(
     db: Database,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     let static_content = warp::get().and(warp::fs::dir("../jdav_client/dist"));
+    let static_content_deployed = warp::get().and(warp::fs::dir("./dist"));
 
-    static_content
+    static_content_deployed
+        .or(static_content)
         .or(create_entry(db.clone()))
         .or(retrieve_entry(db.clone()))
         .or(retrieve_all(db.clone()))
