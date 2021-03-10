@@ -1,4 +1,4 @@
-@host=http://kebes.dnshome.de:8080
+@host=http://localhost:8080
 
 
 PUT {{host}}/distanz/0/laufen

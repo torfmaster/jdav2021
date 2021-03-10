@@ -13,5 +13,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Build
+
+      - name: Install dependencies
+        run: |
+          rustup target add wasm32-unknown-unknown
+          cargo install trunk wasm-bindgen-cli
+
+      - name: Build Backend
         run: cargo build
+
+      - name: Build Frontend
+        run: |
+          cd jdav_client
+          trunk build --release
