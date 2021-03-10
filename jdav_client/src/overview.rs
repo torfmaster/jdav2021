@@ -16,6 +16,7 @@ pub struct OverviewProps {
 }
 pub enum Msg {
     OpenNewEntry,
+    CloseNewEntry,
     Nothing,
 }
 
@@ -49,10 +50,15 @@ impl Component for Overview {
                 true
             }
             Msg::Nothing => false,
+            Msg::CloseNewEntry => {
+                self.current_action = CurrentAction::Nothing;
+                true
+            }
         }
     }
 
     fn view(&self) -> Html {
+        let close_action = self.link.callback(|_| Msg::CloseNewEntry);
         let entry = html! {
         <div class="body-content">
         <Button
@@ -83,7 +89,10 @@ impl Component for Overview {
             CurrentAction::Nothing => overview_modal,
             CurrentAction::NewEntry => {
                 html! {
-                    <NewEntry username={self.props.username.clone()}/>
+                    <NewEntry
+                      username={self.props.username.clone()}
+                      close_action={close_action}
+                    />
                 }
             }
         }

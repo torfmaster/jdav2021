@@ -1,9 +1,9 @@
 use crate::api::BackendRequest;
-use yew::Properties;
 use yew::{
     html, services::ConsoleService, ChangeData, Component, ComponentLink, Html, InputData,
     ShouldRender,
 };
+use yew::{Callback, Properties};
 use yew_styles::button::Button;
 use yew_styles::forms::form_input::FormInput;
 use yew_styles::forms::form_input::InputType;
@@ -20,13 +20,13 @@ pub struct NewEntry {
     link: ComponentLink<Self>,
     distance: String,
     kind: String,
-    add_entry_modal_open: bool,
     props: NewEntryProps,
 }
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct NewEntryProps {
     pub username: String,
+    pub close_action: Callback<()>,
 }
 
 #[derive(Debug)]
@@ -50,7 +50,6 @@ impl Component for NewEntry {
             link,
             distance: "".to_owned(),
             kind: "laufen".to_owned(),
-            add_entry_modal_open: true,
             props,
         }
     }
@@ -61,7 +60,7 @@ impl Component for NewEntry {
             Msg::SetApiFetchState(fetch_state) => {
                 match fetch_state {
                     FetchAction::Fetched(_) => {
-                        self.add_entry_modal_open = false;
+                        self.link.send_message(Msg::CloseConfirmationModal);
                     }
                     FetchAction::Failed(_) => {}
                     _ => {}
@@ -94,7 +93,7 @@ impl Component for NewEntry {
                 false
             }
             Msg::CloseConfirmationModal => {
-                self.add_entry_modal_open = false;
+                self.props.close_action.emit(());
                 false
             }
         }
@@ -145,7 +144,7 @@ impl Component for NewEntry {
             body=entry
             body_style=Style::Outline
             body_palette=Palette::Link
-            is_open=self.add_entry_modal_open
+            is_open=true
             onclick_signal= self.link.callback(|_|  Msg::Nothing )
             onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
             auto_focus=false
