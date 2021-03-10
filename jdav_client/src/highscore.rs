@@ -1,16 +1,8 @@
-use crate::api::BackendRequest;
-use yew::{
-    html, services::ConsoleService, ChangeData, Component, ComponentLink, Html, InputData,
-    ShouldRender,
-};
+use yew::{html, services::ConsoleService, Component, ComponentLink, Html, ShouldRender};
 use yew::{Callback, Properties};
 use yew_styles::button::Button;
-use yew_styles::forms::form_input::FormInput;
-use yew_styles::forms::form_input::InputType;
-use yew_styles::forms::form_select::FormSelect;
 use yew_styles::modal::Modal;
 use yew_styles::styles::Palette;
-use yew_styles::styles::Size;
 use yew_styles::styles::Style;
 
 pub struct HighScore {

@@ -2,12 +2,11 @@
 
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
 pub mod api;
+pub mod highscore;
 pub mod new_entry;
 pub mod overview;
-pub mod highscore;
 
 use crate::overview::Overview;
-use new_entry::NewEntry;
 use yew::InputData;
 use yew_styles::button::Button;
 use yew_styles::forms::form_input::FormInput;

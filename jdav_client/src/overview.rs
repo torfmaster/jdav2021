@@ -4,11 +4,8 @@ use yew::{html, Component, ComponentLink, Html, ShouldRender};
 use crate::highscore::HighScore;
 use crate::new_entry::NewEntry;
 use yew_styles::button::Button;
-use yew_styles::forms::form_input::FormInput;
-use yew_styles::forms::form_input::InputType;
 use yew_styles::modal::Modal;
 use yew_styles::styles::Palette;
-use yew_styles::styles::Size;
 use yew_styles::styles::Style;
 
 #[derive(Clone, Properties, PartialEq)]
