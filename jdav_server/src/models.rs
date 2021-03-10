@@ -1,3 +1,4 @@
+use base64;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -18,9 +19,14 @@ pub struct KilometerEntry {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct User {
-    pub name: Id,
     pub hash: String,
     pub salt: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct UserAuth {
+    pub name: UserKey,
+    pub pass: String,
 }
 
 pub type UserKey = String;

@@ -1,6 +1,22 @@
 @host=http://127.0.0.1:8080
 
 
+POST {{host}}/createuser
+
+{
+  "name": "asdf",
+  "pass": "qwertz"
+}
+
+
+### auth
+POST {{host}}/authenticate
+
+{
+  "name": "asdf",
+  "pass": "qwertz"
+}
+
 #### put
 PUT {{host}}/distanz/0/laufen
 Authorization: asdf
