@@ -132,6 +132,11 @@ impl Component for NewEntry {
             button_palette=Palette::Standard
             button_style=Style::Outline
         >{"Abschicken"}</Button>
+        <Button
+            onclick_signal=self.link.callback(move |_| Msg::CloseConfirmationModal )
+            button_palette=Palette::Standard
+            button_style=Style::Outline
+        >{"Abbrechen"}</Button>
         </div>
         };
 
