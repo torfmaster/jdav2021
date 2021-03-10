@@ -3,7 +3,9 @@
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
 pub mod api;
 pub mod new_entry;
+pub mod overview;
 
+use crate::overview::Overview;
 use new_entry::NewEntry;
 use yew::InputData;
 use yew_styles::button::Button;
@@ -98,7 +100,7 @@ impl Component for Model {
             AppState::LoggedOut(_) => login_modal,
             AppState::LoggedIn(ref username) => {
                 html! {
-                    <NewEntry username={username}/>
+                    <Overview username={username}/>
                 }
             }
         }
