@@ -106,10 +106,17 @@ impl Default for Database {
 }
 
 pub async fn init_db() -> Database {
-    let file = File::open(DATABASE_FILENAME).await.unwrap();
+    let file = File::open(DATABASE_FILENAME).await;
 
-    let data = from_reader(file.into_std().await).unwrap();
-    return Database {
-        database: Arc::new(Mutex::new(data)),
-    };
+    match file {
+        Ok(file) => {
+            let data = from_reader(file.into_std().await).unwrap();
+            return Database {
+                database: Arc::new(Mutex::new(data)),
+            };
+        }
+        Err(_) => {
+            return Database::default();
+        }
+    }
 }
