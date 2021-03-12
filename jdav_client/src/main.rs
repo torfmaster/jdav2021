@@ -5,8 +5,10 @@ pub mod api;
 pub mod highscore;
 pub mod new_entry;
 pub mod overview;
+pub mod register;
 
 use crate::overview::Overview;
+use crate::register::Register;
 use yew::InputData;
 use yew_styles::button::Button;
 use yew_styles::forms::form_input::FormInput;
@@ -18,6 +20,7 @@ use yew_styles::styles::Style;
 
 enum Msg {
     Login,
+    Register,
     SetUserField(String),
     Nothing,
 }
@@ -25,6 +28,7 @@ enum Msg {
 enum AppState {
     LoggedOut(String),
     LoggedIn(String),
+    Register,
 }
 
 struct Model {
@@ -57,6 +61,10 @@ impl Component for Model {
                     false
                 }
             }
+            Msg::Register => {
+                self.state = AppState::Register;
+                true
+            }
             Msg::Nothing => false,
         }
     }
@@ -77,6 +85,11 @@ impl Component for Model {
             button_palette=Palette::Standard
             button_style=Style::Outline
         >{"Einloggen"}</Button>
+        <Button
+            onclick_signal=self.link.callback(move |_| Msg::Register )
+            button_palette=Palette::Standard
+            button_style=Style::Outline
+        >{"Registrieren"}</Button>
         </div>
         };
 
@@ -101,6 +114,14 @@ impl Component for Model {
             AppState::LoggedIn(ref username) => {
                 html! {
                     <Overview username={username}/>
+                }
+            }
+            AppState::Register => {
+                html! {
+                    <Register
+                        username={"".to_string()}
+                        password={"".to_string()}
+                    />
                 }
             }
         }

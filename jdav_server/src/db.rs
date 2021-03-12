@@ -35,6 +35,7 @@ impl Database {
         };
 
         if !db.users.contains_key(&new_user.name) {
+            println!("{} registered", &new_user.name);
             db.users.insert(new_user.name, user);
             self.save_database(&db).await;
             return true;

@@ -1,4 +1,4 @@
-use crate::api::KilometerRequest;
+use crate::api::RegisterRequest;
 use yew::{
     html, services::ConsoleService, ChangeData, Component, ComponentLink, Html, InputData,
     ShouldRender,
@@ -7,7 +7,6 @@ use yew::{Callback, Properties};
 use yew_styles::button::Button;
 use yew_styles::forms::form_input::FormInput;
 use yew_styles::forms::form_input::InputType;
-use yew_styles::forms::form_select::FormSelect;
 use yew_styles::modal::Modal;
 use yew_styles::styles::Palette;
 use yew_styles::styles::Size;
@@ -15,41 +14,35 @@ use yew_styles::styles::Style;
 use yewtil::fetch::{Fetch, FetchAction};
 use yewtil::future::LinkFuture;
 
-pub struct NewEntry {
-    api: Fetch<KilometerRequest, String>,
+pub struct Register {
+    api: Fetch<RegisterRequest, bool>,
     link: ComponentLink<Self>,
-    distance: String,
-    kind: String,
-    props: NewEntryProps,
+    props: RegisterProps,
 }
 
 #[derive(Clone, Properties, PartialEq)]
-pub struct NewEntryProps {
+pub struct RegisterProps {
     pub username: String,
-    pub close_action: Callback<()>,
+    pub password: String,
 }
 
 #[derive(Debug)]
 pub enum Msg {
-    SetApiFetchState(FetchAction<String>),
-    PutDistance,
+    SetApiFetchState(FetchAction<bool>),
+    SendRegister,
     Nothing,
-    SetDistanceField(String),
-    SetUserField(String),
-    SetKindField(String),
-    CloseConfirmationModal,
+    SetUsernameField(String),
+    SetPasswordField(String),
 }
 
-impl Component for NewEntry {
+impl Component for Register {
     type Message = Msg;
-    type Properties = NewEntryProps;
+    type Properties = RegisterProps;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        NewEntry {
+        Register {
             api: Default::default(),
             link,
-            distance: "".to_owned(),
-            kind: "laufen".to_owned(),
             props,
         }
     }
@@ -60,7 +53,7 @@ impl Component for NewEntry {
             Msg::SetApiFetchState(fetch_state) => {
                 match fetch_state {
                     FetchAction::Fetched(_) => {
-                        self.link.send_message(Msg::CloseConfirmationModal);
+                        //self.link.send_message(Msg::CloseConfirmationModal);
                     }
                     FetchAction::Failed(_) => {}
                     _ => {}
@@ -68,11 +61,10 @@ impl Component for NewEntry {
                 self.api.apply(fetch_state);
                 true
             }
-            Msg::PutDistance => {
-                self.api.set_req(KilometerRequest::new(
-                    self.distance.clone(),
+            Msg::SendRegister => {
+                self.api.set_req(RegisterRequest::new(
                     self.props.username.clone(),
-                    self.kind.clone(),
+                    self.props.password.clone(),
                 ));
                 self.link.send_future(self.api.fetch(Msg::SetApiFetchState));
                 self.link
@@ -80,70 +72,62 @@ impl Component for NewEntry {
                 false
             }
             Msg::Nothing => false,
-            Msg::SetDistanceField(value) => {
-                self.distance = value;
-                false
-            }
-            Msg::SetUserField(value) => {
+            Msg::SetUsernameField(value) => {
                 self.props.username = value;
                 false
             }
-            Msg::SetKindField(value) => {
-                self.kind = value;
+            Msg::SetPasswordField(value) => {
+                self.props.password = value;
                 false
-            }
-            Msg::CloseConfirmationModal => {
-                self.props.close_action.emit(());
-                false
-            }
+            } // Msg::CloseConfirmationModal => {
+              //     self.props.close_action.emit(());
+              //     false
+              // }
         }
     }
 
     fn view(&self) -> Html {
         let select_callback = |e: ChangeData| match e {
             ChangeData::Value(_) => Msg::Nothing,
-            ChangeData::Select(v) => Msg::SetKindField(v.value()),
+            ChangeData::Select(v) => Msg::Nothing,
             ChangeData::Files(_) => Msg::Nothing,
         };
 
         let entry = html! {
         <div class="body-content">
-        <FormSelect
-            select_size=Size::Medium
-            onchange_signal = self.link.callback(select_callback)
-            options=html!{
-                <>
-                <option value="laufen">{"Laufen"}</option>
-                <option value="radfahren">{"Radfahren"}</option>
-                <option value="klettern">{"Klettern"}</option>
-                </>
-            }
-        />
         <FormInput
-            input_type=InputType::Number
+            input_type=InputType::Text
             input_palette=Palette::Standard
             input_size=Size::Medium
-            oninput_signal = self.link.callback(|e: InputData| Msg::SetDistanceField(e.value))
-            placeholder="Menge"
+            oninput_signal = self.link.callback(|e: InputData| Msg::SetUsernameField(e.value))
+            placeholder="Benutzername"
+            underline=false
+        />
+        <FormInput
+            input_type=InputType::Password
+            input_palette=Palette::Standard
+            input_size=Size::Medium
+            oninput_signal = self.link.callback(|e: InputData| Msg::SetPasswordField(e.value))
+            placeholder="Passwort"
             underline=false
         />
         <Button
-            onclick_signal=self.link.callback(move |_| Msg::PutDistance )
+            onclick_signal=self.link.callback(move |_| Msg::SendRegister )
             button_palette=Palette::Standard
             button_style=Style::Outline
-        >{"Abschicken"}</Button>
-        <Button
-            onclick_signal=self.link.callback(move |_| Msg::CloseConfirmationModal )
-            button_palette=Palette::Standard
-            button_style=Style::Outline
-        >{"Abbrechen"}</Button>
+        >{"Registrieren"}</Button>
+        // <Button
+        //     onclick_signal=self.link.callback(move |_| Msg::CloseConfirmationModal )
+        //     button_palette=Palette::Standard
+        //     button_style=Style::Outline
+        // >{"Abbrechen"}</Button>
         </div>
         };
 
         html! {
         <Modal
             header=html!{
-                <b>{"Leistungen eintragen"}</b>
+                <b>{"Registrierung"}</b>
             }
             header_palette=Palette::Link
             body=entry

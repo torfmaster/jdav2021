@@ -4,7 +4,7 @@
 POST {{host}}/createuser
 
 {
-  "name": "asdf",
+  "name": "asdfg",
   "pass": "qwertz"
 }
 
@@ -13,13 +13,13 @@ POST {{host}}/createuser
 POST {{host}}/authenticate
 
 {
-  "name": "asdf",
+  "name": "asdffg",
   "pass": "qwertz"
 }
 
 #### put
 PUT {{host}}/distanz/0/laufen
-Authorization: asdf
+Authorization: Basic base64-user-password
 
 {
   "kilometers": 1.5

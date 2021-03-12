@@ -44,6 +44,8 @@ pub async fn create_kilometer_entry(
 ) -> Result<impl warp::Reply, Infallible> {
     let id = database.create_kilometer_entry(kilometer, _user).await;
 
+    println!("{}", pass);
+
     Ok(warp::reply::json(&id.to_string()))
 }
 
