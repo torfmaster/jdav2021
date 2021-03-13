@@ -2,15 +2,15 @@ use shared::Kilometer;
 use yewtil::fetch::{FetchRequest, Json, MethodBody};
 
 #[derive(Debug, Clone, PartialEq, Default)]
-pub struct BackendRequest {
+pub struct KilometerRequest {
     pub id: String,
     pub payload: Kilometer,
     pub kind: String,
 }
 
-impl BackendRequest {
+impl KilometerRequest {
     pub fn new(distance: String, username: String, kind: String) -> Self {
-        BackendRequest {
+        KilometerRequest {
             id: username,
             payload: Kilometer {
                 kilometers: distance.parse::<f32>().unwrap(),
@@ -20,7 +20,7 @@ impl BackendRequest {
     }
 }
 
-impl FetchRequest for BackendRequest {
+impl FetchRequest for KilometerRequest {
     type RequestBody = Kilometer;
     type ResponseBody = String;
     type Format = Json;

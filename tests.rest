@@ -1,7 +1,25 @@
-@host=http://localhost:8080
+@host=http://127.0.0.1:8080
 
 
+POST {{host}}/createuser
+
+{
+  "name": "asdfg",
+  "pass": "qwertz"
+}
+
+
+### auth
+POST {{host}}/authenticate
+
+{
+  "name": "asdffg",
+  "pass": "qwertz"
+}
+
+#### put
 PUT {{host}}/distanz/0/laufen
+Authorization: Basic base64-user-password
 
 {
   "kilometers": 1.5
@@ -20,7 +38,7 @@ GET {{host}}/distanz/0/laufen/all
 GET {{host}}/distanz/1/laufen/all
 
 #### Summe
-GET {{host}}/distanz/0/laufen/sum
+GET 127.0.0.1:8080/distanz/0/laufen/sum
 
 #### Summe
 GET {{host}}/distanz/1/laufen/sum

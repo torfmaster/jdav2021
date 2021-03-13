@@ -1,16 +1,45 @@
 use std::convert::Infallible;
 
-use warp::{self, http::StatusCode, Reply};
+use shared::Kilometer;
+use warp::{self, http::StatusCode};
 
 use crate::db::Database;
-use crate::models::{Id, Kilometer, KilometerEntry};
+use crate::models::{Id, KilometerEntry, UserAuth};
+
+pub async fn create_user(
+    new_user: UserAuth,
+    database: Database,
+) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
+    if database.create_user(new_user).await {
+        Ok(Box::new(warp::reply::json(&"user created")))
+    } else {
+        Ok(Box::new(warp::reply::with_status(
+            "Error Creating User".to_owned(),
+            StatusCode::FORBIDDEN,
+        )))
+    }
+}
+
+pub async fn authenticate_user(
+    user_auth: UserAuth,
+    database: Database,
+) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
+    if database.authenticate_user(user_auth).await {
+        Ok(Box::new(warp::reply::json(&"user auth'd")))
+    } else {
+        Ok(Box::new(warp::reply::with_status(
+            "Wrong user/password".to_owned(),
+            StatusCode::UNAUTHORIZED,
+        )))
+    }
+}
 
 pub async fn create_kilometer_entry(
-    _user: String,
+    user: String,
     kilometer: Kilometer,
     database: Database,
 ) -> Result<impl warp::Reply, Infallible> {
-    let id = database.create_kilometer_entry(kilometer, _user).await;
+    let id = database.create_kilometer_entry(kilometer, user).await;
 
     Ok(warp::reply::json(&id.to_string()))
 }
@@ -52,7 +81,7 @@ pub async fn retrieve_kilometer_sum(
     user: String,
     database: Database,
 ) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
-    let sum = database.retrieve_kilometer_sum(user.clone()).await;
+    let sum: Option<Kilometer> = database.retrieve_kilometer_sum(user.clone()).await;
     match sum {
         Some(sum) => {
             return Ok(Box::new(warp::reply::json(&sum)));
