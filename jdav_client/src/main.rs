@@ -2,17 +2,8 @@
 
 use api::login::LoginRequest;
 use shared::UserAuth;
-use yew::{html, Component, ComponentLink, Html, ShouldRender};
-use yewtil::fetch::{Fetch, FetchAction};
-pub mod api;
-pub mod highscore;
-pub mod new_entry;
-pub mod overview;
-pub mod register;
-
-use crate::overview::Overview;
-use crate::register::Register;
 use yew::InputData;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 use yew_styles::button::Button;
 use yew_styles::forms::form_input::FormInput;
 use yew_styles::forms::form_input::InputType;
@@ -20,15 +11,27 @@ use yew_styles::modal::Modal;
 use yew_styles::styles::Palette;
 use yew_styles::styles::Size;
 use yew_styles::styles::Style;
+use yewtil::fetch::{Fetch, FetchAction};
+use yewtil::future::LinkFuture;
+
+use crate::overview::Overview;
+use crate::register::Register;
+
+pub mod api;
+pub mod highscore;
+pub mod new_entry;
+pub mod overview;
+pub mod register;
 
 enum Msg {
-    Login,
+    StartLogin,
     Register,
     SetUserField(String),
     SetPasswordField(String),
     CloseAction,
     Nothing,
     SetApiFetchState(FetchAction<String>),
+    FinalizeLogin,
 }
 
 enum AppState {
@@ -75,10 +78,15 @@ impl Component for Model {
                 }
                 false
             }
-            Msg::Login => {
-                if let AppState::LoggedOut(ref username) = self.state {
-                    self.state = AppState::LoggedIn(username.to_owned());
-                    true
+            Msg::StartLogin => {
+                if let AppState::LoggedOut(ref user_auth) = self.state {
+                    self.api.set_req(LoginRequest {
+                        payload: user_auth.clone(),
+                    });
+                    self.link.send_future(self.api.fetch(Msg::SetApiFetchState));
+                    self.link
+                        .send_message(Msg::SetApiFetchState(FetchAction::Fetching));
+                    false
                 } else {
                     false
                 }
@@ -95,7 +103,7 @@ impl Component for Model {
             Msg::SetApiFetchState(fetch_state) => {
                 match fetch_state {
                     FetchAction::Fetched(_) => {
-                        self.link.send_message(Msg::Login);
+                        self.link.send_message(Msg::FinalizeLogin);
                     }
                     FetchAction::Failed(_) => {}
                     _ => {}
@@ -103,6 +111,14 @@ impl Component for Model {
                 self.api.apply(fetch_state);
 
                 true
+            }
+            Msg::FinalizeLogin => {
+                if let AppState::LoggedOut(ref username) = self.state {
+                    self.state = AppState::LoggedIn(username.to_owned());
+                    true
+                } else {
+                    false
+                }
             }
         }
     }
@@ -127,7 +143,7 @@ impl Component for Model {
             underline=false
         />
         <Button
-            onclick_signal=self.link.callback(move |_| Msg::Login )
+            onclick_signal=self.link.callback(move |_| Msg::StartLogin )
             button_palette=Palette::Standard
             button_style=Style::Outline
         >{"Einloggen"}</Button>
