@@ -2,13 +2,13 @@ use base64;
 use rand::prelude::*;
 use serde_json::{from_reader, to_writer};
 use sha2::{Digest, Sha256};
-use shared::Kilometer;
+use shared::{Kilometer, UserAuth};
 use std::sync::Arc;
 use tokio::fs::File;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use crate::models::{DatabaseModel, Id, KilometerEntry, User, UserAuth};
+use crate::models::{DatabaseModel, Id, KilometerEntry, User};
 
 static DATABASE_FILENAME: &'static str = "./database.json";
 

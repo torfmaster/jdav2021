@@ -1,10 +1,10 @@
 use std::convert::Infallible;
 
-use shared::Kilometer;
+use shared::{Kilometer, UserAuth};
 use warp::{self, http::StatusCode};
 
 use crate::db::Database;
-use crate::models::{Id, KilometerEntry, UserAuth};
+use crate::models::{Id, KilometerEntry};
 
 pub async fn create_user(
     new_user: UserAuth,

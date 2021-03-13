@@ -1,10 +1,10 @@
-use shared::Kilometer;
+use shared::{Kilometer, UserAuth};
 use std::convert::Infallible;
 use warp::{self, Filter};
 
 use crate::db::Database;
 use crate::handlers;
-use crate::models::{Id, UserAuth};
+use crate::models::Id;
 
 pub fn routes(
     db: Database,

@@ -18,12 +18,6 @@ pub struct User {
     pub salt: String,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct UserAuth {
-    pub name: UserKey,
-    pub pass: String,
-}
-
 pub type UserKey = String;
 pub type EntryDatabaseModel = HashMap<UserKey, Vec<KilometerEntry>>;
 pub type UserDatabaseModel = HashMap<UserKey, User>;
