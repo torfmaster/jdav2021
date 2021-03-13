@@ -1,4 +1,4 @@
-use crate::api::KilometerRequest;
+use crate::api::new_entry::KilometerRequest;
 use yew::{html, ChangeData, Component, ComponentLink, Html, InputData, ShouldRender};
 use yew::{Callback, Properties};
 use yew_styles::button::Button;

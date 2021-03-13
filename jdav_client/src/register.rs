@@ -1,4 +1,4 @@
-use crate::api::RegisterRequest;
+use crate::api::register::RegisterRequest;
 use yew::{
     html, services::ConsoleService, Component, ComponentLink, Html, InputData, ShouldRender,
 };
