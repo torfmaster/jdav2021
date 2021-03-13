@@ -1,6 +1,9 @@
 #![recursion_limit = "512"]
 
+use api::login::LoginRequest;
+use shared::UserAuth;
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
+use yewtil::fetch::{Fetch, FetchAction};
 pub mod api;
 pub mod highscore;
 pub mod new_entry;
@@ -22,18 +25,21 @@ enum Msg {
     Login,
     Register,
     SetUserField(String),
+    SetPasswordField(String),
     CloseAction,
     Nothing,
+    SetApiFetchState(FetchAction<String>),
 }
 
 enum AppState {
-    LoggedOut(String),
-    LoggedIn(String),
+    LoggedOut(UserAuth),
+    LoggedIn(UserAuth),
     Register,
 }
 
 struct Model {
     link: ComponentLink<Self>,
+    api: Fetch<LoginRequest, String>,
     state: AppState,
 }
 
@@ -43,15 +49,30 @@ impl Component for Model {
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         Model {
+            api: Default::default(),
             link,
-            state: AppState::LoggedOut("".to_owned()),
+            state: AppState::LoggedOut(Default::default()),
         }
     }
 
     fn update(&mut self, message: Self::Message) -> bool {
         match message {
             Msg::SetUserField(username) => {
-                self.state = AppState::LoggedOut(username);
+                if let AppState::LoggedOut(ref user_auth) = self.state {
+                    self.state = AppState::LoggedOut(UserAuth {
+                        name: username,
+                        ..user_auth.clone()
+                    });
+                }
+                false
+            }
+            Msg::SetPasswordField(password) => {
+                if let AppState::LoggedOut(ref user_auth) = self.state {
+                    self.state = AppState::LoggedOut(UserAuth {
+                        pass: password,
+                        ..user_auth.clone()
+                    });
+                }
                 false
             }
             Msg::Login => {
@@ -68,7 +89,19 @@ impl Component for Model {
             }
             Msg::Nothing => false,
             Msg::CloseAction => {
-                self.state = AppState::LoggedOut("".to_owned());
+                self.state = AppState::LoggedOut(Default::default());
+                true
+            }
+            Msg::SetApiFetchState(fetch_state) => {
+                match fetch_state {
+                    FetchAction::Fetched(_) => {
+                        self.link.send_message(Msg::Login);
+                    }
+                    FetchAction::Failed(_) => {}
+                    _ => {}
+                }
+                self.api.apply(fetch_state);
+
                 true
             }
         }
@@ -83,6 +116,14 @@ impl Component for Model {
             input_size=Size::Medium
             oninput_signal = self.link.callback(|e: InputData| Msg::SetUserField(e.value))
             placeholder="Username"
+            underline=false
+        />
+        <FormInput
+            input_type=InputType::Text
+            input_palette=Palette::Standard
+            input_size=Size::Medium
+            oninput_signal = self.link.callback(|e: InputData| Msg::SetPasswordField(e.value))
+            placeholder="Passwort"
             underline=false
         />
         <Button
@@ -118,9 +159,9 @@ impl Component for Model {
 
         match self.state {
             AppState::LoggedOut(_) => login_modal,
-            AppState::LoggedIn(ref username) => {
+            AppState::LoggedIn(ref user_auth) => {
                 html! {
-                    <Overview username={username}/>
+                    <Overview username={user_auth.name.clone()}/>
                 }
             }
             AppState::Register => {

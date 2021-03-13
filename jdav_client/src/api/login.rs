@@ -2,19 +2,19 @@ use shared::UserAuth;
 use yewtil::fetch::{FetchRequest, Json, MethodBody};
 
 #[derive(Debug, Clone, Default)]
-pub struct RegisterRequest {
+pub struct LoginRequest {
     pub payload: UserAuth,
 }
 
-impl PartialEq for RegisterRequest {
+impl PartialEq for LoginRequest {
     fn eq(&self, other: &Self) -> bool {
         self.payload.name == other.payload.name && self.payload.pass == other.payload.pass
     }
 }
 
-impl RegisterRequest {
+impl LoginRequest {
     pub fn new(username: String, password: String) -> Self {
-        RegisterRequest {
+        LoginRequest {
             payload: {
                 UserAuth {
                     name: username,
@@ -25,13 +25,13 @@ impl RegisterRequest {
     }
 }
 
-impl FetchRequest for RegisterRequest {
+impl FetchRequest for LoginRequest {
     type RequestBody = UserAuth;
     type ResponseBody = String;
     type Format = Json;
 
     fn url(&self) -> String {
-        "/createuser".to_string()
+        "/authenticate".to_string()
     }
 
     fn method(&self) -> MethodBody<Self::RequestBody> {
