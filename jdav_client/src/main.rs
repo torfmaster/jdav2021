@@ -135,7 +135,7 @@ impl Component for Model {
             underline=false
         />
         <FormInput
-            input_type=InputType::Text
+            input_type=InputType::Password
             input_palette=Palette::Standard
             input_size=Size::Medium
             oninput_signal = self.link.callback(|e: InputData| Msg::SetPasswordField(e.value))
