@@ -1,10 +1,9 @@
 use shared::{Kilometer, UserAuth};
-use std::convert::Infallible;
 use warp::{self, Filter};
 
 use crate::db::Database;
-use crate::handlers;
 use crate::models::Id;
+use crate::{handlers, middleware::authentication_middleware, middleware::with_database};
 
 pub fn routes(
     db: Database,
@@ -49,6 +48,7 @@ fn create_entry(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("distanz" / String / "laufen")
         .and(warp::put())
+        .and(authentication_middleware())
         .and(json_kilometer_entry())
         .and(with_database(db.clone()))
         .and_then(handlers::create_kilometer_entry)
@@ -86,10 +86,4 @@ fn retrieve_sum(
     warp::path!("distanz" / String / "laufen" / "sum")
         .and(with_database(db.clone()))
         .and_then(handlers::retrieve_kilometer_sum)
-}
-
-fn with_database(
-    database: Database,
-) -> impl Filter<Extract = (Database,), Error = Infallible> + Clone {
-    warp::any().map(move || database.clone())
 }

@@ -1,12 +1,17 @@
+use std::convert::Infallible;
+
 use shared::UserAuth;
+use warp::Filter;
+
+use crate::db::Database;
 
 #[derive(Debug)]
-enum AuthError {
+pub enum AuthError {
     InvalidAuthHeader,
     InvalidBase64,
 }
 
-fn extract_basicauth(header: String) -> Result<UserAuth, AuthError> {
+pub fn extract_basicauth(header: String) -> Result<UserAuth, AuthError> {
     let stripped = header.split("Basic ").collect::<Vec<&str>>();
     let stripped = match stripped.as_slice() {
         [_, ref base64_content] => Ok((base64_content).to_owned()),
@@ -26,6 +31,21 @@ fn extract_basicauth(header: String) -> Result<UserAuth, AuthError> {
     }
 }
 
+#[derive(Debug)]
+struct UnAuthorized;
+
+impl warp::reject::Reject for UnAuthorized {}
+
+pub fn authentication_middleware(
+) -> impl Filter<Extract = (String,), Error = warp::Rejection> + Clone {
+    warp::header::<String>("Authorization")
+}
+
+pub fn with_database(
+    database: Database,
+) -> impl Filter<Extract = (Database,), Error = Infallible> + Clone {
+    warp::any().map(move || database.clone())
+}
 #[cfg(test)]
 pub mod test {
     use shared::UserAuth;

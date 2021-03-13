@@ -44,14 +44,14 @@ impl Database {
         false
     }
 
-    pub async fn authenticate_user(&self, user_auth: UserAuth) -> bool {
+    pub async fn authenticate_user(&self, user_auth: &UserAuth) -> bool {
         let db = self.database.lock().await;
 
         if db.users.contains_key(&user_auth.name) {
             let user = db.users.get(&user_auth.name).unwrap();
 
             let mut hasher = Sha256::new();
-            hasher.update(user_auth.pass + &user.salt);
+            hasher.update(user_auth.pass.clone() + &user.salt);
             let hash = base64::encode(hasher.finalize());
             if &hash == &user.hash {
                 return true;
