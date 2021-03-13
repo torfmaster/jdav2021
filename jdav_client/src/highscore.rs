@@ -1,3 +1,4 @@
+use shared::UserAuth;
 use yew::{html, services::ConsoleService, Component, ComponentLink, Html, ShouldRender};
 use yew::{Callback, Properties};
 use yew_styles::button::Button;
@@ -12,7 +13,7 @@ pub struct HighScore {
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct HighscoreProps {
-    pub username: String,
+    pub auth: UserAuth,
     pub close_action: Callback<()>,
 }
 
