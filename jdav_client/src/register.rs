@@ -1,7 +1,6 @@
 use crate::api::RegisterRequest;
 use yew::{
-    html, services::ConsoleService, ChangeData, Component, ComponentLink, Html, InputData,
-    ShouldRender,
+    html, services::ConsoleService, Component, ComponentLink, Html, InputData, ShouldRender,
 };
 use yew::{Callback, Properties};
 use yew_styles::button::Button;
@@ -15,24 +14,26 @@ use yewtil::fetch::{Fetch, FetchAction};
 use yewtil::future::LinkFuture;
 
 pub struct Register {
-    api: Fetch<RegisterRequest, bool>,
+    api: Fetch<RegisterRequest, String>,
     link: ComponentLink<Self>,
     props: RegisterProps,
+    username: String,
+    password: String,
 }
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct RegisterProps {
-    pub username: String,
-    pub password: String,
+    pub close_action: Callback<()>,
 }
 
 #[derive(Debug)]
 pub enum Msg {
-    SetApiFetchState(FetchAction<bool>),
+    SetApiFetchState(FetchAction<String>),
     SendRegister,
     Nothing,
     SetUsernameField(String),
     SetPasswordField(String),
+    CloseModal,
 }
 
 impl Component for Register {
@@ -44,6 +45,8 @@ impl Component for Register {
             api: Default::default(),
             link,
             props,
+            username: "".to_owned(),
+            password: "".to_owned(),
         }
     }
 
@@ -53,18 +56,19 @@ impl Component for Register {
             Msg::SetApiFetchState(fetch_state) => {
                 match fetch_state {
                     FetchAction::Fetched(_) => {
-                        //self.link.send_message(Msg::CloseConfirmationModal);
+                        self.link.send_message(Msg::CloseModal);
                     }
                     FetchAction::Failed(_) => {}
                     _ => {}
                 }
                 self.api.apply(fetch_state);
+
                 true
             }
             Msg::SendRegister => {
                 self.api.set_req(RegisterRequest::new(
-                    self.props.username.clone(),
-                    self.props.password.clone(),
+                    self.username.clone(),
+                    self.password.clone(),
                 ));
                 self.link.send_future(self.api.fetch(Msg::SetApiFetchState));
                 self.link
@@ -73,26 +77,21 @@ impl Component for Register {
             }
             Msg::Nothing => false,
             Msg::SetUsernameField(value) => {
-                self.props.username = value;
+                self.username = value;
                 false
             }
             Msg::SetPasswordField(value) => {
-                self.props.password = value;
+                self.password = value;
                 false
-            } // Msg::CloseConfirmationModal => {
-              //     self.props.close_action.emit(());
-              //     false
-              // }
+            }
+            Msg::CloseModal => {
+                self.props.close_action.emit(());
+                true
+            }
         }
     }
 
     fn view(&self) -> Html {
-        let select_callback = |e: ChangeData| match e {
-            ChangeData::Value(_) => Msg::Nothing,
-            ChangeData::Select(v) => Msg::Nothing,
-            ChangeData::Files(_) => Msg::Nothing,
-        };
-
         let entry = html! {
         <div class="body-content">
         <FormInput
@@ -116,11 +115,11 @@ impl Component for Register {
             button_palette=Palette::Standard
             button_style=Style::Outline
         >{"Registrieren"}</Button>
-        // <Button
-        //     onclick_signal=self.link.callback(move |_| Msg::CloseConfirmationModal )
-        //     button_palette=Palette::Standard
-        //     button_style=Style::Outline
-        // >{"Abbrechen"}</Button>
+        <Button
+             onclick_signal=self.link.callback(move |_| Msg::CloseModal )
+             button_palette=Palette::Standard
+             button_style=Style::Outline
+         >{"Abbrechen"}</Button>
         </div>
         };
 

@@ -1,8 +1,5 @@
 use crate::api::KilometerRequest;
-use yew::{
-    html, services::ConsoleService, ChangeData, Component, ComponentLink, Html, InputData,
-    ShouldRender,
-};
+use yew::{html, ChangeData, Component, ComponentLink, Html, InputData, ShouldRender};
 use yew::{Callback, Properties};
 use yew_styles::button::Button;
 use yew_styles::forms::form_input::FormInput;
@@ -55,7 +52,6 @@ impl Component for NewEntry {
     }
 
     fn update(&mut self, message: Self::Message) -> bool {
-        ConsoleService::info(&format!("Update: {:?}", message));
         match message {
             Msg::SetApiFetchState(fetch_state) => {
                 match fetch_state {

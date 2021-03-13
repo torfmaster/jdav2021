@@ -68,7 +68,7 @@ impl RegisterRequest {
 
 impl FetchRequest for RegisterRequest {
     type RequestBody = UserAuth;
-    type ResponseBody = bool;
+    type ResponseBody = String;
     type Format = Json;
 
     fn url(&self) -> String {

@@ -22,6 +22,7 @@ enum Msg {
     Login,
     Register,
     SetUserField(String),
+    CloseAction,
     Nothing,
 }
 
@@ -66,6 +67,10 @@ impl Component for Model {
                 true
             }
             Msg::Nothing => false,
+            Msg::CloseAction => {
+                self.state = AppState::LoggedOut("".to_owned());
+                true
+            }
         }
     }
 
@@ -93,6 +98,8 @@ impl Component for Model {
         </div>
         };
 
+        let close_action = self.link.callback(|_| Msg::CloseAction);
+
         let login_modal = html! {
         <Modal
             header=html!{
@@ -119,8 +126,7 @@ impl Component for Model {
             AppState::Register => {
                 html! {
                     <Register
-                        username={"".to_string()}
-                        password={"".to_string()}
+                        close_action={close_action}
                     />
                 }
             }

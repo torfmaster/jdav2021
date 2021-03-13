@@ -1,6 +1,6 @@
 use std::convert::Infallible;
 
-use warp::{self, http::StatusCode, Reply};
+use warp::{self, http::StatusCode};
 
 use crate::db::Database;
 use crate::models::{Id, Kilometer, KilometerEntry, UserAuth};
@@ -8,31 +8,28 @@ use crate::models::{Id, Kilometer, KilometerEntry, UserAuth};
 pub async fn create_user(
     new_user: UserAuth,
     database: Database,
-) -> Result<impl warp::Reply, Infallible> {
+) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
     if database.create_user(new_user).await {
-        Ok(warp::reply::with_status(
-            "user created",
-            StatusCode::CREATED,
-        ))
+        Ok(Box::new(warp::reply::json(&"user created")))
     } else {
-        Ok(warp::reply::with_status(
-            "error creating user",
-            StatusCode::CREATED,
-        ))
+        Ok(Box::new(warp::reply::with_status(
+            "Error Creating User".to_owned(),
+            StatusCode::FORBIDDEN,
+        )))
     }
 }
 
 pub async fn authenticate_user(
     user_auth: UserAuth,
     database: Database,
-) -> Result<impl warp::Reply, Infallible> {
+) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
     if database.authenticate_user(user_auth).await {
-        Ok(warp::reply::with_status("user auth'd", StatusCode::CREATED))
+        Ok(Box::new(warp::reply::json(&"user auth'd")))
     } else {
-        Ok(warp::reply::with_status(
-            "user not auth'd - wrong name or password",
-            StatusCode::CREATED,
-        ))
+        Ok(Box::new(warp::reply::with_status(
+            "Wrong user/password".to_owned(),
+            StatusCode::UNAUTHORIZED,
+        )))
     }
 }
 
