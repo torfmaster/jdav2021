@@ -35,21 +35,17 @@ pub async fn authenticate_user(
 }
 
 pub async fn create_kilometer_entry(
-    _user: String,
-    pass: String,
+    user: String,
     kilometer: Kilometer,
     database: Database,
 ) -> Result<impl warp::Reply, Infallible> {
-    let id = database.create_kilometer_entry(kilometer, _user).await;
-
-    println!("{}", pass);
+    let id = database.create_kilometer_entry(kilometer, user).await;
 
     Ok(warp::reply::json(&id.to_string()))
 }
 
 pub async fn retrieve_kilometer_entry(
     user: String,
-    pass: String,
     ident: Id,
     database: Database,
 ) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
@@ -69,7 +65,6 @@ pub async fn retrieve_kilometer_entry(
 
 pub async fn retrieve_kilometer_all(
     user: String,
-    pass: String,
     database: Database,
 ) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
     let entries = database.retrieve_kilometer_all(user.clone()).await;
@@ -84,7 +79,6 @@ pub async fn retrieve_kilometer_all(
 
 pub async fn retrieve_kilometer_sum(
     user: String,
-    pass: String,
     database: Database,
 ) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
     let sum: Option<Kilometer> = database.retrieve_kilometer_sum(user.clone()).await;

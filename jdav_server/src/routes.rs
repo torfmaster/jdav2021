@@ -48,7 +48,6 @@ fn create_entry(
     db: Database,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("distanz" / String / "laufen")
-        .and(warp::header::<String>("Authorization"))
         .and(warp::put())
         .and(json_kilometer_entry())
         .and(with_database(db.clone()))
@@ -63,7 +62,6 @@ fn retrieve_entry(
     db: Database,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("distanz" / String / "laufen")
-        .and(warp::header::<String>("Authorization"))
         .and(json_kilometer_retrieve())
         .and(with_database(db.clone()))
         .and_then(handlers::retrieve_kilometer_entry)
@@ -78,7 +76,6 @@ fn retrieve_all(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("distanz" / String / "laufen" / "all")
         .and(warp::path::end())
-        .and(warp::header::<String>("Authorization"))
         .and(with_database(db.clone()))
         .and_then(handlers::retrieve_kilometer_all)
 }
@@ -87,7 +84,6 @@ fn retrieve_sum(
     db: Database,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("distanz" / String / "laufen" / "sum")
-        .and(warp::header::<String>("Authorization"))
         .and(with_database(db.clone()))
         .and_then(handlers::retrieve_kilometer_sum)
 }
