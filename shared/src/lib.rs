@@ -19,3 +19,11 @@ impl Default for UserAuth {
         }
     }
 }
+
+impl UserAuth {
+    pub fn to_basic_auth_header(&self) -> String {
+        let composed = format!("{}:{}", self.name, self.pass);
+        let encoded = base64::encode(composed);
+        format!("Basic {}", encoded)
+    }
+}

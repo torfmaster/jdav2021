@@ -1,4 +1,5 @@
 use crate::api::new_entry::KilometerRequest;
+use shared::UserAuth;
 use yew::{html, ChangeData, Component, ComponentLink, Html, InputData, ShouldRender};
 use yew::{Callback, Properties};
 use yew_styles::button::Button;
@@ -21,7 +22,7 @@ pub struct NewEntry {
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct NewEntryProps {
-    pub username: String,
+    pub auth: UserAuth,
     pub close_action: Callback<()>,
 }
 
@@ -31,7 +32,6 @@ pub enum Msg {
     PutDistance,
     Nothing,
     SetDistanceField(String),
-    SetUserField(String),
     SetKindField(String),
     CloseConfirmationModal,
 }
@@ -66,7 +66,7 @@ impl Component for NewEntry {
             Msg::PutDistance => {
                 self.api.set_req(KilometerRequest::new(
                     self.distance.clone(),
-                    self.props.username.clone(),
+                    self.props.auth.clone(),
                     self.kind.clone(),
                 ));
                 self.link.send_future(self.api.fetch(Msg::SetApiFetchState));
@@ -77,10 +77,6 @@ impl Component for NewEntry {
             Msg::Nothing => false,
             Msg::SetDistanceField(value) => {
                 self.distance = value;
-                false
-            }
-            Msg::SetUserField(value) => {
-                self.props.username = value;
                 false
             }
             Msg::SetKindField(value) => {

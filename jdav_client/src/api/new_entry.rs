@@ -1,17 +1,17 @@
-use shared::Kilometer;
+use shared::{Kilometer, UserAuth};
 use yewtil::fetch::{FetchRequest, Json, MethodBody};
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct KilometerRequest {
-    pub id: String,
+    pub auth: UserAuth,
     pub payload: Kilometer,
     pub kind: String,
 }
 
 impl KilometerRequest {
-    pub fn new(distance: String, username: String, kind: String) -> Self {
+    pub fn new(distance: String, auth: UserAuth, kind: String) -> Self {
         KilometerRequest {
-            id: username,
+            auth,
             payload: Kilometer {
                 kilometers: distance.parse::<f32>().unwrap(),
             },
@@ -26,7 +26,7 @@ impl FetchRequest for KilometerRequest {
     type Format = Json;
 
     fn url(&self) -> String {
-        format!("/distanz/{}/{}", self.id, self.kind)
+        format!("/distanz/{}/{}", self.auth.name, self.kind)
     }
 
     fn method(&self) -> MethodBody<Self::RequestBody> {
@@ -34,7 +34,10 @@ impl FetchRequest for KilometerRequest {
     }
 
     fn headers(&self) -> Vec<(String, String)> {
-        vec![("Content-Type".to_owned(), "application/json".to_owned())]
+        vec![
+            ("Content-Type".to_owned(), "application/json".to_owned()),
+            ("Authorization".to_owned(), self.auth.to_basic_auth_header()),
+        ]
     }
 
     fn use_cors(&self) -> bool {

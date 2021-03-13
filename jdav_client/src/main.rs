@@ -177,7 +177,7 @@ impl Component for Model {
             AppState::LoggedOut(_) => login_modal,
             AppState::LoggedIn(ref user_auth) => {
                 html! {
-                    <Overview username={user_auth.name.clone()}/>
+                    <Overview auth={user_auth.clone()}/>
                 }
             }
             AppState::Register => {

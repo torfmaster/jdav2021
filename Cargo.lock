@@ -1142,6 +1142,7 @@ dependencies = [
 name = "shared"
 version = "0.1.0"
 dependencies = [
+ "base64 0.13.0",
  "serde",
  "serde_json",
 ]

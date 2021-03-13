@@ -2,13 +2,13 @@ use base64;
 use rand::prelude::*;
 use serde_json::{from_reader, to_writer};
 use sha2::{Digest, Sha256};
-use shared::Kilometer;
+use shared::{Kilometer, UserAuth};
 use std::sync::Arc;
 use tokio::fs::File;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use crate::models::{DatabaseModel, Id, KilometerEntry, User, UserAuth};
+use crate::models::{DatabaseModel, Id, KilometerEntry, User};
 
 static DATABASE_FILENAME: &'static str = "./database.json";
 
@@ -32,7 +32,7 @@ impl Database {
 
         let user = User {
             hash: hash_b64,
-            salt: salt,
+            salt,
         };
 
         if !db.users.contains_key(&new_user.name) {
@@ -44,14 +44,14 @@ impl Database {
         false
     }
 
-    pub async fn authenticate_user(&self, user_auth: UserAuth) -> bool {
+    pub async fn authenticate_user(&self, user_auth: &UserAuth) -> bool {
         let db = self.database.lock().await;
 
         if db.users.contains_key(&user_auth.name) {
             let user = db.users.get(&user_auth.name).unwrap();
 
             let mut hasher = Sha256::new();
-            hasher.update(user_auth.pass + &user.salt);
+            hasher.update(user_auth.pass.clone() + &user.salt);
             let hash = base64::encode(hasher.finalize());
             if &hash == &user.hash {
                 return true;
@@ -82,55 +82,7 @@ impl Database {
         self.save_database(&db).await;
         new_id
     }
-    pub async fn retrieve_kilometer_entry(
-        &self,
-        ident: Id,
-        user: String,
-    ) -> Option<KilometerEntry> {
-        let mut db = self.database.lock().await;
-        let entries_for_user = db.entries.get_mut(&user);
-        match entries_for_user {
-            Some(entries_for_user) => {
-                for entry in entries_for_user.iter() {
-                    if entry.id == ident {
-                        return Some(entry.clone());
-                    }
-                }
-                return None;
-            }
-            None => {
-                return None;
-            }
-        }
-    }
-    pub async fn retrieve_kilometer_all(&self, user: String) -> Option<Vec<KilometerEntry>> {
-        let mut db = self.database.lock().await;
-        let entries_for_user = db.entries.get_mut(&user);
-        match entries_for_user {
-            Some(entries_for_user) => {
-                return Some(entries_for_user.clone());
-            }
-            None => {
-                return None;
-            }
-        }
-    }
-    pub async fn retrieve_kilometer_sum(&self, user: String) -> Option<Kilometer> {
-        let db = self.database.lock().await;
-        let entries_for_user = db.entries.get(&user);
-        match entries_for_user {
-            Some(entries_for_user) => {
-                let mut sum: f32 = 0.0;
-                for entry in entries_for_user.iter() {
-                    sum += entry.kilometers.kilometers;
-                }
-                return Some(Kilometer { kilometers: sum });
-            }
-            None => {
-                return None;
-            }
-        }
-    }
+
     async fn save_database(&self, db: &DatabaseModel) {
         let file = File::create(DATABASE_FILENAME).await;
         match file {

@@ -1,3 +1,4 @@
+use shared::UserAuth;
 use yew::Properties;
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
@@ -10,7 +11,7 @@ use yew_styles::styles::Style;
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct OverviewProps {
-    pub username: String,
+    pub auth: UserAuth,
 }
 pub enum Msg {
     OpenNewEntry,
@@ -100,7 +101,8 @@ impl Component for Overview {
             CurrentAction::NewEntry => {
                 html! {
                     <NewEntry
-                      username={self.props.username.clone()}
+                      auth={
+                          self.props.auth.clone()}
                       close_action={close_action}
                     />
                 }
@@ -108,7 +110,7 @@ impl Component for Overview {
             CurrentAction::HighScore => {
                 html! {
                     <HighScore
-                      username={self.props.username.clone()}
+                      auth={self.props.auth.clone()}
                       close_action={close_action}
                     />
                 }
