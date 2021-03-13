@@ -10,7 +10,7 @@ serde = { version="1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1"
 shared = { path="../shared"}
-yew_styles = { version="0.9", features=["button", "forms", "modal"] }
+yew_styles = { version="0.9", features=["button", "forms", "modal", "layouts"] }
 yewtil = { version = "0.3.2", features = ["future", "fetch"] }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"

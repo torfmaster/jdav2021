@@ -9,8 +9,11 @@ use yew_styles::forms::form_input::FormInput;
 use yew_styles::forms::form_input::InputType;
 use yew_styles::modal::Modal;
 use yew_styles::styles::Palette;
-use yew_styles::styles::Size;
 use yew_styles::styles::Style;
+use yew_styles::{
+    forms::form_group::{FormGroup, Orientation},
+    styles::Size,
+};
 use yewtil::fetch::{Fetch, FetchAction};
 use yewtil::future::LinkFuture;
 
@@ -126,33 +129,49 @@ impl Component for Model {
     fn view(&self) -> Html {
         let entry = html! {
         <div class="body-content">
-        <FormInput
-            input_type=InputType::Text
-            input_palette=Palette::Standard
-            input_size=Size::Medium
-            oninput_signal = self.link.callback(|e: InputData| Msg::SetUserField(e.value))
-            placeholder="Username"
-            underline=false
-        />
-        <FormInput
-            input_type=InputType::Password
-            input_palette=Palette::Standard
-            input_size=Size::Medium
-            oninput_signal = self.link.callback(|e: InputData| Msg::SetPasswordField(e.value))
-            placeholder="Passwort"
-            underline=false
-        />
-        <Button
-            onclick_signal=self.link.callback(move |_| Msg::StartLogin )
-            button_palette=Palette::Standard
-            button_style=Style::Outline
-        >{"Einloggen"}</Button>
-        <Button
-            onclick_signal=self.link.callback(move |_| Msg::Register )
-            button_palette=Palette::Standard
-            button_style=Style::Outline
-        >{"Registrieren"}</Button>
-        </div>
+            <FormGroup orientation=Orientation::Vertical>
+                <FormInput
+                    input_type=InputType::Text
+                    input_palette=Palette::Standard
+                    input_size=Size::Medium
+                    oninput_signal = self.link.callback(|e: InputData| Msg::SetUserField(e.value))
+                    placeholder="Username"
+                    underline=false
+                />
+            </FormGroup>
+
+            <FormGroup orientation=Orientation::Vertical>
+                <FormInput
+                    input_type=InputType::Password
+                    input_palette=Palette::Standard
+                    input_size=Size::Medium
+                    oninput_signal = self.link.callback(|e: InputData| Msg::SetPasswordField(e.value))
+                    placeholder="Passwort"
+                    underline=false
+                />
+
+            </FormGroup>
+            <FormGroup orientation=Orientation::Horizontal>
+
+            <FormGroup orientation=Orientation::Horizontal>
+                <Button
+                    onclick_signal=self.link.callback(move |_| Msg::StartLogin )
+                    button_palette=Palette::Info
+                    button_style=Style::Outline
+                >{"Einloggen"}
+                </Button>
+            </FormGroup>
+            <FormGroup orientation=Orientation::Horizontal>
+                 <Button
+                    onclick_signal=self.link.callback(move |_| Msg::Register )
+                    button_palette=Palette::Standard
+                    button_style=Style::Outline
+                >{"Registrieren"}</Button>
+            </FormGroup>
+            </FormGroup>
+
+
+         </div>
         };
 
         let close_action = self.link.callback(|_| Msg::CloseAction);
@@ -170,6 +189,7 @@ impl Component for Model {
             onclick_signal= self.link.callback(|_|  Msg::Nothing )
             onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
             auto_focus=false
+            modal_size=Size::Big
         />
         };
 
