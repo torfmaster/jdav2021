@@ -17,5 +17,6 @@ structopt = "0.3"
 rand = "0.8.3"
 sha2 = "0.9.3"
 base64 = "0.13.0"
+shared = { path="../shared"}
 
 

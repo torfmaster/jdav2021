@@ -3,7 +3,6 @@ use yew::{html, ChangeData, Component, ComponentLink, Html, InputData, ShouldRen
 use yew::{Callback, Properties};
 use yew_styles::button::Button;
 use yew_styles::forms::form_input::FormInput;
-use yew_styles::forms::form_input::InputType;
 use yew_styles::forms::form_select::FormSelect;
 use yew_styles::modal::Modal;
 use yew_styles::styles::Palette;
@@ -116,7 +115,6 @@ impl Component for NewEntry {
             }
         />
         <FormInput
-            input_type=InputType::Number
             input_palette=Palette::Standard
             input_size=Size::Medium
             oninput_signal = self.link.callback(|e: InputData| Msg::SetDistanceField(e.value))

@@ -1,9 +1,10 @@
 use std::convert::Infallible;
 
+use shared::Kilometer;
 use warp::{self, http::StatusCode};
 
 use crate::db::Database;
-use crate::models::{Id, Kilometer, KilometerEntry, UserAuth};
+use crate::models::{Id, KilometerEntry, UserAuth};
 
 pub async fn create_user(
     new_user: UserAuth,
@@ -86,7 +87,7 @@ pub async fn retrieve_kilometer_sum(
     pass: String,
     database: Database,
 ) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
-    let sum = database.retrieve_kilometer_sum(user.clone()).await;
+    let sum: Option<Kilometer> = database.retrieve_kilometer_sum(user.clone()).await;
     match sum {
         Some(sum) => {
             return Ok(Box::new(warp::reply::json(&sum)));

@@ -2,12 +2,13 @@ use base64;
 use rand::prelude::*;
 use serde_json::{from_reader, to_writer};
 use sha2::{Digest, Sha256};
-use std::{collections::HashMap, sync::Arc};
+use shared::Kilometer;
+use std::sync::Arc;
 use tokio::fs::File;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use crate::models::{DatabaseModel, Id, Kilometer, KilometerEntry, User, UserAuth, UserKey};
+use crate::models::{DatabaseModel, Id, KilometerEntry, User, UserAuth};
 
 static DATABASE_FILENAME: &'static str = "./database.json";
 
@@ -131,7 +132,6 @@ impl Database {
         }
     }
     async fn save_database(&self, db: &DatabaseModel) {
-        //let db = self.database.lock().await;
         let file = File::create(DATABASE_FILENAME).await;
         match file {
             Ok(json) => {

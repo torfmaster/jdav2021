@@ -1,12 +1,7 @@
-use base64;
 use serde::{Deserialize, Serialize};
+use shared::Kilometer;
 use std::collections::HashMap;
 use uuid::Uuid;
-#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq)]
-pub struct Kilometer {
-    pub kilometers: f32,
-}
-
 #[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
 pub struct Id {
     pub id: Uuid,
