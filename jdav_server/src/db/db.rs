@@ -1,6 +1,6 @@
 use base64;
 use rand::prelude::*;
-use serde_json::{from_reader, to_writer};
+use serde_json::to_writer;
 use sha2::{Digest, Sha256};
 use shared::{Highscore, HighscoreEntry, Kilometer, UserAuth};
 use std::sync::Arc;
@@ -10,9 +10,7 @@ use uuid::Uuid;
 
 use crate::models::{DatabaseModel, Id, KilometerEntry, User};
 
-use super::{migration_to_v1, DatabaseWithVersion};
-
-static DATABASE_FILENAME: &'static str = "./database.json";
+pub static DATABASE_FILENAME: &'static str = "./database.json";
 
 #[derive(Clone)]
 pub struct Database {
@@ -111,33 +109,9 @@ impl Default for Database {
 }
 
 pub async fn init_db() -> Database {
-    migrate().await.unwrap_or(Default::default())
-}
-
-async fn migrate() -> Result<Database, ()> {
-    let file = File::open(DATABASE_FILENAME).await.map_err(|_| ())?;
-
-    let data = from_reader::<_, DatabaseWithVersion>(file.into_std().await).map_err(|_| ())?;
-
-    match data.database_version {
-        Some(super::DatabaseVersion::V1) => {
-            let file = File::open(DATABASE_FILENAME).await.map_err(|_| ())?;
-
-            let data = from_reader::<_, DatabaseModel>(file.into_std().await).map_err(|_| ())?;
-
-            Ok(Database {
-                database: Arc::new(Mutex::new(data)),
-            })
-        }
-        None => {
-            let file = File::open(DATABASE_FILENAME).await.map_err(|_| ())?;
-            let data = from_reader::<_, migration_to_v1::DatabaseModel>(file.into_std().await)
-                .map_err(|_| ())?;
-            Ok(Database {
-                database: Arc::new(Mutex::new(data.to_v1())),
-            })
-        }
-    }
+    crate::db::migration::migrate()
+        .await
+        .unwrap_or(Default::default())
 }
 
 fn get_highscore(database: &DatabaseModel) -> Highscore {

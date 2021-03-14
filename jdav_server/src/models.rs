@@ -3,7 +3,8 @@ use shared::Kilometer;
 use std::collections::HashMap;
 use uuid::Uuid;
 
-use crate::db::DatabaseVersion;
+use crate::db::migration::DatabaseVersion;
+
 #[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
 pub struct Id {
     pub id: Uuid,

@@ -1,12 +1,9 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+
+use self::migration::DatabaseVersion;
 
 pub mod db;
-pub mod migration_to_v1;
-
-#[derive(Deserialize, Debug, Serialize, Clone)]
-pub enum DatabaseVersion {
-    V1,
-}
+pub mod migration;
 
 #[derive(Deserialize, Debug)]
 pub struct DatabaseWithVersion {
