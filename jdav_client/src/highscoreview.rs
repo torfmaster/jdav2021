@@ -1,10 +1,13 @@
 use shared::{Highscore, UserAuth};
 use yew::{html, services::ConsoleService, Component, ComponentLink, Html, ShouldRender};
 use yew::{Callback, Properties};
-use yew_styles::button::Button;
-use yew_styles::modal::Modal;
-use yew_styles::styles::Palette;
-use yew_styles::styles::Style;
+use yew_styles::{
+    button::Button,
+    layouts::item::{AlignSelf, Item, ItemLayout},
+};
+use yew_styles::{layouts::container::Container, styles::Style};
+use yew_styles::{layouts::container::Direction, modal::Modal};
+use yew_styles::{layouts::container::Wrap, styles::Palette};
 use yewtil::fetch::{Fetch, FetchAction};
 use yewtil::future::LinkFuture;
 
@@ -14,7 +17,7 @@ pub struct HighscoreView {
     link: ComponentLink<Self>,
     api: Fetch<HighscoreRequest, Highscore>,
     props: HighscoreProps,
-    pub content: String,
+    pub content: Highscore,
 }
 
 #[derive(Clone, Properties, PartialEq)]
@@ -47,7 +50,6 @@ impl Component for HighscoreView {
     }
 
     fn update(&mut self, message: Self::Message) -> bool {
-        ConsoleService::info(&format!("Update: {:?}", message));
         match message {
             Msg::Nothing => false,
             Msg::CloseModal => {
@@ -56,7 +58,7 @@ impl Component for HighscoreView {
             }
             Msg::SetApiFetchState(fetch_state) => {
                 match fetch_state {
-                    FetchAction::Fetched(ref response) => self.content = format!("{:?}", response),
+                    FetchAction::Fetched(ref response) => self.content = response.clone(),
                     FetchAction::Failed(_) => {}
                     _ => {}
                 }
@@ -75,21 +77,55 @@ impl Component for HighscoreView {
     }
 
     fn view(&self) -> Html {
+        let entries = self.content.list.iter().enumerate().map(|(pos, item)| {
+            html! {
+                <Container direction=Direction::Row wrap=Wrap::Wrap class_name="align-item">
+                <Item layouts=vec!(ItemLayout::ItXs(4)) align_self=AlignSelf::FlexStart>
+                    {pos+1}
+                </Item>
+                <Item layouts=vec!(ItemLayout::ItXs(4)) align_self=AlignSelf::FlexStart>
+                    {item.user.clone()}
+                </Item>
+                <Item layouts=vec!(ItemLayout::ItXs(4)) align_self=AlignSelf::FlexStart>
+                    {item.points.clone()}
+                </Item>
+                </Container>
+            }
+        });
+
+        let highscore_table = html! {
+            <Container direction=Direction::Column wrap=Wrap::Wrap class_name="align-item">
+                <Container direction=Direction::Row wrap=Wrap::Wrap class_name="align-item">
+                    <Item layouts=vec!(ItemLayout::ItXs(4)) align_self=AlignSelf::FlexStart>
+                        {"Platz"}
+                    </Item>
+                    <Item layouts=vec!(ItemLayout::ItXs(4)) align_self=AlignSelf::FlexStart>
+                        {"Name"}
+                    </Item>
+                    <Item layouts=vec!(ItemLayout::ItXs(4)) align_self=AlignSelf::FlexStart>
+                        {"Punktzahl"}
+                    </Item>
+                </Container>
+                {entries.collect::<Html>()}
+            </Container>
+        };
         let entry = html! {
         <div class="body-content">
-        <Button
-            onclick_signal=self.link.callback(move |_| Msg::CloseModal )
-            button_palette=Palette::Standard
-            button_style=Style::Outline
-        >{"Abbrechen"}</Button>
-        {self.content.clone()}
+            {highscore_table}
+            <Button
+                onclick_signal=self.link.callback(move |_| Msg::CloseModal )
+                button_palette=Palette::Standard
+                button_style=Style::Outline
+            >
+            {"Schließen"}
+            </Button>
         </div>
         };
 
         html! {
         <Modal
             header=html!{
-                <b>{"Hier könnten Highscores stehen"}</b>
+                <b>{"Bestenliste"}</b>
             }
             header_palette=Palette::Link
             body=entry
