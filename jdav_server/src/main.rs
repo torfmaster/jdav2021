@@ -23,7 +23,7 @@ async fn main() {
             .tls()
             .cert_path("/etc/letsencrypt/live/kebes.dnshome.de/fullchain.pem")
             .key_path("/etc/letsencrypt/live/kebes.dnshome.de/privkey.pem")
-            .run(([0, 0, 0, 0], 8080))
+            .run(([0, 0, 0, 0], 443))
             .await;
     } else {
         warp::serve(routes::routes(database.clone()))
