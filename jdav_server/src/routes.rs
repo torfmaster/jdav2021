@@ -15,6 +15,7 @@ pub fn routes(
         .or(create_user(db.clone()))
         .or(authenticate_user(db.clone()))
         .or(create_entry(db.clone()))
+        .or(get_highscore(db.clone()))
 }
 
 fn create_user(
@@ -48,6 +49,16 @@ fn create_entry(
         .and(json_kilometer_entry())
         .and(with_database(db.clone()))
         .and_then(handlers::create_kilometer_entry)
+}
+
+fn get_highscore(
+    db: Database,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("highscore")
+        .and(warp::put())
+        .and(authentication_middleware())
+        .and(with_database(db.clone()))
+        .and_then(handlers::get_highscore)
 }
 
 fn json_kilometer_entry() -> impl Filter<Extract = (Kilometer,), Error = warp::Rejection> + Clone {

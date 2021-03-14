@@ -32,14 +32,11 @@ PUT {{host}}/distanz/1/laufen
   "kilometers": 1.4
 }
 
-####
-GET {{host}}/distanz/0/laufen/all
-####
-GET {{host}}/distanz/1/laufen/all
+#### Highscore
+PUT {{host}}/highscore
+Authorization: Basic YXNkOmFzZA==
 
-#### Summe
-GET 127.0.0.1:8080/distanz/0/laufen/sum
-
-#### Summe
-GET {{host}}/distanz/1/laufen/sum
+{
+  "kilometers": 1.5
+}
 

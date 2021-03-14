@@ -2,7 +2,7 @@ use shared::UserAuth;
 use yew::Properties;
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
-use crate::highscore::HighScore;
+use crate::highscoreview::HighscoreView;
 use crate::new_entry::NewEntry;
 use yew_styles::button::Button;
 use yew_styles::modal::Modal;
@@ -109,7 +109,7 @@ impl Component for Overview {
             }
             CurrentAction::HighScore => {
                 html! {
-                    <HighScore
+                    <HighscoreView
                       auth={self.props.auth.clone()}
                       close_action={close_action}
                     />
