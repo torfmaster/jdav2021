@@ -3,7 +3,7 @@ use std::convert::Infallible;
 use shared::{Kilometer, UserAuth};
 use warp::{self, http::StatusCode};
 
-use crate::{db::Database, middleware::extract_basicauth};
+use crate::{db::db::Database, middleware::extract_basicauth};
 
 pub async fn create_user(
     new_user: UserAuth,

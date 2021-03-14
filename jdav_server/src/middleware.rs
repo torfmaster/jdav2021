@@ -3,7 +3,7 @@ use std::convert::Infallible;
 use shared::UserAuth;
 use warp::Filter;
 
-use crate::db::Database;
+use crate::db::db::Database;
 
 #[derive(Debug)]
 pub enum AuthError {

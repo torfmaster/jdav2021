@@ -10,6 +10,8 @@ use uuid::Uuid;
 
 use crate::models::{DatabaseModel, Id, KilometerEntry, User};
 
+use super::{migration_to_v1, DatabaseWithVersion};
+
 static DATABASE_FILENAME: &'static str = "./database.json";
 
 #[derive(Clone)]
@@ -66,6 +68,7 @@ impl Database {
         let new_entry: KilometerEntry = KilometerEntry {
             id: Id { id: new_id },
             kilometers: kilometer,
+            kind: crate::models::Kind::Running,
         };
 
         let entries_for_user = db.entries.get_mut(&user);
@@ -108,17 +111,31 @@ impl Default for Database {
 }
 
 pub async fn init_db() -> Database {
-    let file = File::open(DATABASE_FILENAME).await;
+    migrate().await.unwrap_or(Default::default())
+}
 
-    match file {
-        Ok(file) => {
-            let data = from_reader(file.into_std().await).unwrap();
-            return Database {
+async fn migrate() -> Result<Database, ()> {
+    let file = File::open(DATABASE_FILENAME).await.map_err(|_| ())?;
+
+    let data = from_reader::<_, DatabaseWithVersion>(file.into_std().await).map_err(|_| ())?;
+
+    match data.database_version {
+        Some(super::DatabaseVersion::V1) => {
+            let file = File::open(DATABASE_FILENAME).await.map_err(|_| ())?;
+
+            let data = from_reader::<_, DatabaseModel>(file.into_std().await).map_err(|_| ())?;
+
+            Ok(Database {
                 database: Arc::new(Mutex::new(data)),
-            };
+            })
         }
-        Err(_) => {
-            return Database::default();
+        None => {
+            let file = File::open(DATABASE_FILENAME).await.map_err(|_| ())?;
+            let data = from_reader::<_, migration_to_v1::DatabaseModel>(file.into_std().await)
+                .map_err(|_| ())?;
+            Ok(Database {
+                database: Arc::new(Mutex::new(data.to_v1())),
+            })
         }
     }
 }
@@ -158,11 +175,13 @@ mod test {
         let kilometer_entry = KilometerEntry {
             id: id1,
             kilometers: kilometer1,
+            kind: crate::models::Kind::Running,
         };
 
         let kilometer_entry2 = KilometerEntry {
             id: id2,
             kilometers: kilometer2,
+            kind: crate::models::Kind::Running,
         };
         database
             .entries
@@ -172,7 +191,7 @@ mod test {
             .entries
             .insert("user2".to_owned(), vec![kilometer_entry2]);
 
-        let score = get_highscore(database);
+        let score = get_highscore(&database);
         let first = score.list.get(0).unwrap();
         let second = score.list.get(1).unwrap();
         assert_eq!(first.user, "user1");
