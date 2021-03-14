@@ -27,3 +27,13 @@ impl UserAuth {
         format!("Basic {}", encoded)
     }
 }
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, Clone, Default)]
+pub struct Highscore {
+    pub list: Vec<HighscoreEntry>,
+}
+#[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
+pub struct HighscoreEntry {
+    pub user: String,
+    pub points: f32,
+}

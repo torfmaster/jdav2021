@@ -18,7 +18,7 @@ use crate::overview::Overview;
 use crate::register::Register;
 
 pub mod api;
-pub mod highscore;
+pub mod highscoreview;
 pub mod new_entry;
 pub mod overview;
 pub mod register;

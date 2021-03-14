@@ -2,7 +2,7 @@ use base64;
 use rand::prelude::*;
 use serde_json::{from_reader, to_writer};
 use sha2::{Digest, Sha256};
-use shared::{Kilometer, UserAuth};
+use shared::{Highscore, HighscoreEntry, Kilometer, UserAuth};
 use std::sync::Arc;
 use tokio::fs::File;
 use tokio::sync::Mutex;
@@ -92,6 +92,11 @@ impl Database {
             Err(_) => {}
         }
     }
+
+    pub async fn get_highscore(&self) -> Highscore {
+        let db = self.database.lock().await;
+        get_highscore(&db)
+    }
 }
 
 impl Default for Database {
@@ -115,5 +120,62 @@ pub async fn init_db() -> Database {
         Err(_) => {
             return Database::default();
         }
+    }
+}
+
+fn get_highscore(database: &DatabaseModel) -> Highscore {
+    let mut list = database
+        .entries
+        .iter()
+        .map(|(key, value)| HighscoreEntry {
+            user: key.clone(),
+            points: value.iter().fold(0.0, |acc, entry: &KilometerEntry| {
+                acc + entry.kilometers.kilometers
+            }),
+        })
+        .collect::<Vec<_>>();
+    list.sort_by(|entry1, entry2| entry2.points.partial_cmp(&entry1.points).unwrap());
+    Highscore { list }
+}
+
+#[cfg(test)]
+mod test {
+    use shared::Kilometer;
+    use uuid::Uuid;
+
+    use super::get_highscore;
+    use crate::models::{DatabaseModel, Id, KilometerEntry};
+
+    #[test]
+    pub fn can_process_one_kilometer_entry() {
+        let mut database: DatabaseModel = Default::default();
+        let id1 = Id { id: Uuid::new_v4() };
+        let id2 = Id { id: Uuid::new_v4() };
+
+        let kilometer1 = Kilometer { kilometers: 2.0 };
+        let kilometer2 = Kilometer { kilometers: 1.0 };
+
+        let kilometer_entry = KilometerEntry {
+            id: id1,
+            kilometers: kilometer1,
+        };
+
+        let kilometer_entry2 = KilometerEntry {
+            id: id2,
+            kilometers: kilometer2,
+        };
+        database
+            .entries
+            .insert("user1".to_owned(), vec![kilometer_entry]);
+
+        database
+            .entries
+            .insert("user2".to_owned(), vec![kilometer_entry2]);
+
+        let score = get_highscore(database);
+        let first = score.list.get(0).unwrap();
+        let second = score.list.get(1).unwrap();
+        assert_eq!(first.user, "user1");
+        assert_eq!(second.user, "user2");
     }
 }

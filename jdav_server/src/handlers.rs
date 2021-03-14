@@ -52,10 +52,36 @@ pub async fn create_kilometer_entry(
     }
 }
 
+pub async fn get_highscore(
+    header: String,
+    database: Database,
+) -> Result<Box<dyn warp::Reply>, Infallible> {
+    let authorization = authorize_general(header, database.clone()).await;
+
+    if authorization.is_ok() {
+        let highscore = database.get_highscore().await;
+        Ok(Box::new(warp::reply::json(&highscore)))
+    } else {
+        Ok(Box::new(warp::reply::with_status(
+            format!("Unauthorized"),
+            StatusCode::UNAUTHORIZED,
+        )))
+    }
+}
+
 pub async fn authorize(user: &String, header: String, database: Database) -> Result<(), ()> {
     let auth = extract_basicauth(header).map_err(|_| ())?;
 
     if !database.authenticate_user(&auth).await || &auth.name != user {
+        return Err(());
+    }
+    Ok(())
+}
+
+pub async fn authorize_general(header: String, database: Database) -> Result<(), ()> {
+    let auth = extract_basicauth(header).map_err(|_| ())?;
+
+    if !database.authenticate_user(&auth).await {
         return Err(());
     }
     Ok(())
