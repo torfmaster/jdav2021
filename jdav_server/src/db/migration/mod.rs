@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use serde_json::from_reader;
-use tokio::{fs::File, sync::Mutex};
+use tokio::{fs::File, sync::RwLock};
 
 use crate::models::DatabaseModel;
 
@@ -25,7 +25,7 @@ pub async fn migrate() -> Result<Database, ()> {
             let data = from_reader::<_, DatabaseModel>(file.into_std().await).map_err(|_| ())?;
 
             Ok(Database {
-                database: Arc::new(Mutex::new(data)),
+                database: Arc::new(RwLock::new(data)),
             })
         }
         None => {
@@ -33,7 +33,7 @@ pub async fn migrate() -> Result<Database, ()> {
             let data = from_reader::<_, migration_to_v1::DatabaseModel>(file.into_std().await)
                 .map_err(|_| ())?;
             Ok(Database {
-                database: Arc::new(Mutex::new(data.to_v1())),
+                database: Arc::new(RwLock::new(data.to_v1())),
             })
         }
     }

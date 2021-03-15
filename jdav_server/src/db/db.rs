@@ -4,7 +4,7 @@ use sha2::{Digest, Sha256};
 use shared::{Highscore, HighscoreEntry, Kilometer, UserAuth};
 use std::sync::Arc;
 use tokio::fs::File;
-use tokio::sync::Mutex;
+use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::models::{DatabaseModel, Id, KilometerEntry, User};
@@ -13,12 +13,12 @@ pub static DATABASE_FILENAME: &str = "./database.json";
 
 #[derive(Clone)]
 pub struct Database {
-    pub database: Arc<Mutex<DatabaseModel>>,
+    pub database: Arc<RwLock<DatabaseModel>>,
 }
 
 impl Database {
     pub async fn create_user(&self, new_user: UserAuth) -> bool {
-        let mut db = self.database.lock().await;
+        let mut db = self.database.write().await;
 
         let mut salt_bytes: [u8; 8] = [0; 8];
         rand::thread_rng().fill_bytes(&mut salt_bytes);
@@ -43,7 +43,7 @@ impl Database {
     }
 
     pub async fn authenticate_user(&self, user_auth: &UserAuth) -> bool {
-        let db = self.database.lock().await;
+        let db = self.database.read().await;
 
         if db.users.contains_key(&user_auth.name) {
             let user = db.users.get(&user_auth.name).unwrap();
@@ -64,7 +64,7 @@ impl Database {
         user: String,
         kind: crate::models::Kind,
     ) -> Uuid {
-        let mut db = self.database.lock().await;
+        let mut db = self.database.write().await;
         let new_id = Uuid::new_v4();
         let new_entry: KilometerEntry = KilometerEntry {
             id: Id { id: new_id },
@@ -95,7 +95,7 @@ impl Database {
     }
 
     pub async fn get_highscore(&self) -> Highscore {
-        let db = self.database.lock().await;
+        let db = self.database.read().await;
         get_highscore(&db)
     }
 }
@@ -103,7 +103,7 @@ impl Database {
 impl Default for Database {
     fn default() -> Self {
         Database {
-            database: Arc::new(Mutex::new(DatabaseModel::default())),
+            database: Arc::new(RwLock::new(DatabaseModel::default())),
         }
     }
 }
