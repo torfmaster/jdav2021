@@ -3,13 +3,13 @@ use yew::{
     html, services::ConsoleService, Component, ComponentLink, Html, InputData, ShouldRender,
 };
 use yew::{Callback, Properties};
-use yew_styles::button::Button;
 use yew_styles::forms::form_input::FormInput;
 use yew_styles::forms::form_input::InputType;
 use yew_styles::modal::Modal;
 use yew_styles::styles::Palette;
 use yew_styles::styles::Size;
 use yew_styles::styles::Style;
+use yew_styles::{button::Button, forms::form_group::FormGroup};
 use yewtil::fetch::{Fetch, FetchAction};
 use yewtil::future::LinkFuture;
 
@@ -19,6 +19,7 @@ pub struct Register {
     props: RegisterProps,
     username: String,
     password: String,
+    password_confirmation: String,
 }
 
 #[derive(Clone, Properties, PartialEq)]
@@ -33,6 +34,7 @@ pub enum Msg {
     Nothing,
     SetUsernameField(String),
     SetPasswordField(String),
+    SetPasswordConfirmationField(String),
     CloseModal,
 }
 
@@ -45,13 +47,13 @@ impl Component for Register {
             api: Default::default(),
             link,
             props,
-            username: "".to_owned(),
-            password: "".to_owned(),
+            username: Default::default(),
+            password: Default::default(),
+            password_confirmation: Default::default(),
         }
     }
 
     fn update(&mut self, message: Self::Message) -> bool {
-        ConsoleService::info(&format!("Update: {:?}", message));
         match message {
             Msg::SetApiFetchState(fetch_state) => {
                 match fetch_state {
@@ -78,11 +80,15 @@ impl Component for Register {
             Msg::Nothing => false,
             Msg::SetUsernameField(value) => {
                 self.username = value;
-                false
+                true
             }
             Msg::SetPasswordField(value) => {
                 self.password = value;
-                false
+                true
+            }
+            Msg::SetPasswordConfirmationField(value) => {
+                self.password_confirmation = value;
+                true
             }
             Msg::CloseModal => {
                 self.props.close_action.emit(());
@@ -92,24 +98,50 @@ impl Component for Register {
     }
 
     fn view(&self) -> Html {
+        let username_has_error = self.username == "";
+        let password_has_error = self.password != self.password_confirmation;
+        let username_error_message = if username_has_error {
+            "Darf nicht leer sein "
+        } else {
+            ""
+        };
+        let password_error_message = if password_has_error {
+            "müssen übereinstimmen"
+        } else {
+            ""
+        };
         let entry = html! {
         <div class="body-content">
-        <FormInput
-            input_type=InputType::Text
-            input_palette=Palette::Standard
-            input_size=Size::Medium
-            oninput_signal = self.link.callback(|e: InputData| Msg::SetUsernameField(e.value))
-            placeholder="Benutzername"
-            underline=false
-        />
-        <FormInput
-            input_type=InputType::Password
-            input_palette=Palette::Standard
-            input_size=Size::Medium
-            oninput_signal = self.link.callback(|e: InputData| Msg::SetPasswordField(e.value))
-            placeholder="Passwort"
-            underline=false
-        />
+        <FormGroup>
+            <FormInput
+                input_type=InputType::Text
+                input_palette=Palette::Standard
+                input_size=Size::Medium
+                oninput_signal = self.link.callback(|e: InputData| Msg::SetUsernameField(e.value))
+                placeholder="Benutzername"
+                underline=false
+                error_state=username_has_error
+                error_message=username_error_message
+            />
+            <FormInput
+                input_type=InputType::Password
+                input_palette=Palette::Standard
+                input_size=Size::Medium
+                oninput_signal = self.link.callback(|e: InputData| Msg::SetPasswordField(e.value))
+                placeholder="Passwort"
+                underline=false
+            />
+            <FormInput
+                input_type=InputType::Password
+                input_palette=Palette::Standard
+                input_size=Size::Medium
+                oninput_signal = self.link.callback(|e: InputData| Msg::SetPasswordConfirmationField(e.value))
+                placeholder="Passwort bestätigen"
+                underline=false
+                error_state=password_has_error
+                error_message=password_error_message
+            />
+        </FormGroup>
         <Button
             onclick_signal=self.link.callback(move |_| Msg::SendRegister )
             button_palette=Palette::Standard

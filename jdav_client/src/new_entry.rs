@@ -2,22 +2,22 @@ use crate::api::new_entry::KilometerRequest;
 use shared::UserAuth;
 use yew::{html, ChangeData, Component, ComponentLink, Html, InputData, ShouldRender};
 use yew::{Callback, Properties};
-use yew_styles::button::Button;
 use yew_styles::forms::form_input::FormInput;
 use yew_styles::forms::form_select::FormSelect;
 use yew_styles::modal::Modal;
 use yew_styles::styles::Palette;
 use yew_styles::styles::Size;
 use yew_styles::styles::Style;
+use yew_styles::{button::Button, forms::form_group::FormGroup};
 use yewtil::fetch::{Fetch, FetchAction};
 use yewtil::future::LinkFuture;
 
 pub struct NewEntry {
     api: Fetch<KilometerRequest, String>,
     link: ComponentLink<Self>,
-    distance: String,
     kind: String,
     props: NewEntryProps,
+    parsed_distance: Option<f32>,
 }
 
 #[derive(Clone, Properties, PartialEq)]
@@ -44,9 +44,9 @@ impl Component for NewEntry {
         NewEntry {
             api: Default::default(),
             link,
-            distance: "".to_owned(),
             kind: "laufen".to_owned(),
             props,
+            parsed_distance: None,
         }
     }
 
@@ -64,28 +64,30 @@ impl Component for NewEntry {
                 true
             }
             Msg::PutDistance => {
-                self.api.set_req(KilometerRequest::new(
-                    self.distance.clone(),
-                    self.props.auth.clone(),
-                    self.kind.clone(),
-                ));
-                self.link.send_future(self.api.fetch(Msg::SetApiFetchState));
-                self.link
-                    .send_message(Msg::SetApiFetchState(FetchAction::Fetching));
+                if let Some(parsed_distance) = self.parsed_distance {
+                    self.api.set_req(KilometerRequest::new(
+                        parsed_distance,
+                        self.props.auth.clone(),
+                        self.kind.clone(),
+                    ));
+                    self.link.send_future(self.api.fetch(Msg::SetApiFetchState));
+                    self.link
+                        .send_message(Msg::SetApiFetchState(FetchAction::Fetching));
+                }
                 false
             }
             Msg::Nothing => false,
             Msg::SetDistanceField(value) => {
-                self.distance = value;
-                false
+                self.parsed_distance = value.parse::<f32>().ok();
+                true
             }
             Msg::SetKindField(value) => {
                 self.kind = value;
-                false
+                true
             }
             Msg::CloseConfirmationModal => {
                 self.props.close_action.emit(());
-                false
+                true
             }
         }
     }
@@ -97,26 +99,36 @@ impl Component for NewEntry {
             ChangeData::Files(_) => Msg::Nothing,
         };
 
+        let error = if self.parsed_distance.is_none() {
+            "Muss eine gültige Zahl sein, z.B. 1.0"
+        } else {
+            ""
+        };
+
         let entry = html! {
         <div class="body-content">
-        <FormSelect
-            select_size=Size::Medium
-            onchange_signal = self.link.callback(select_callback)
-            options=html!{
-                <>
-                <option value="laufen">{"Laufen"}</option>
-                <option value="radfahren">{"Radfahren"}</option>
-                <option value="klettern">{"Klettern"}</option>
-                </>
-            }
-        />
-        <FormInput
-            input_palette=Palette::Standard
-            input_size=Size::Medium
-            oninput_signal = self.link.callback(|e: InputData| Msg::SetDistanceField(e.value))
-            placeholder="Menge"
-            underline=false
-        />
+        <FormGroup>
+            <FormSelect
+                select_size=Size::Medium
+                onchange_signal = self.link.callback(select_callback)
+                options=html!{
+                    <>
+                    <option value="laufen">{"Laufen"}</option>
+                    <option value="radfahren">{"Radfahren"}</option>
+                    <option value="klettern">{"Klettern"}</option>
+                    </>
+                }
+            />
+            <FormInput
+                input_palette=Palette::Standard
+                input_size=Size::Medium
+                error_state=self.parsed_distance.is_none()
+                error_message=error
+                oninput_signal = self.link.callback(|e: InputData| Msg::SetDistanceField(e.value))
+                placeholder="Menge"
+                underline=false
+            />
+        </FormGroup>
         <Button
             onclick_signal=self.link.callback(move |_| Msg::PutDistance )
             button_palette=Palette::Standard
