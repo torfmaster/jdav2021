@@ -9,11 +9,11 @@ pub struct KilometerRequest {
 }
 
 impl KilometerRequest {
-    pub fn new(distance: String, auth: UserAuth, kind: String) -> Self {
+    pub fn new(distance: f32, auth: UserAuth, kind: String) -> Self {
         KilometerRequest {
             auth,
             payload: Kilometer {
-                kilometers: distance.parse::<f32>().unwrap(),
+                kilometers: distance,
             },
             kind,
         }
