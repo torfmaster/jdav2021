@@ -59,7 +59,7 @@ impl DatabaseModel {
     }
 }
 
-fn map_entry(entry: &Vec<KilometerEntry>) -> Vec<crate::models::KilometerEntry> {
+fn map_entry(entry: &[KilometerEntry]) -> Vec<crate::models::KilometerEntry> {
     entry
         .iter()
         .map(|entry| crate::models::KilometerEntry {

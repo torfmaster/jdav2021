@@ -1,4 +1,3 @@
-use base64;
 use rand::prelude::*;
 use serde_json::to_writer;
 use sha2::{Digest, Sha256};
@@ -10,7 +9,7 @@ use uuid::Uuid;
 
 use crate::models::{DatabaseModel, Id, KilometerEntry, User};
 
-pub static DATABASE_FILENAME: &'static str = "./database.json";
+pub static DATABASE_FILENAME: &str = "./database.json";
 
 #[derive(Clone)]
 pub struct Database {
@@ -36,7 +35,6 @@ impl Database {
         };
 
         if !db.users.contains_key(&new_user.name) {
-            println!("{} registered", &new_user.name);
             db.users.insert(new_user.name, user);
             self.save_database(&db).await;
             return true;
@@ -53,7 +51,7 @@ impl Database {
             let mut hasher = Sha256::new();
             hasher.update(user_auth.pass.clone() + &user.salt);
             let hash = base64::encode(hasher.finalize());
-            if &hash == &user.hash {
+            if hash == user.hash {
                 return true;
             }
         }
@@ -91,11 +89,8 @@ impl Database {
 
     async fn save_database(&self, db: &DatabaseModel) {
         let file = File::create(DATABASE_FILENAME).await;
-        match file {
-            Ok(json) => {
-                to_writer(json.into_std().await, &db.clone()).expect("error writing to file");
-            }
-            Err(_) => {}
+        if let Ok(json) = file {
+            to_writer(json.into_std().await, &db.clone()).expect("error writing to file");
         }
     }
 
@@ -114,9 +109,7 @@ impl Default for Database {
 }
 
 pub async fn init_db() -> Database {
-    crate::db::migration::migrate()
-        .await
-        .unwrap_or(Default::default())
+    crate::db::migration::migrate().await.unwrap_or_default()
 }
 
 fn get_highscore(database: &DatabaseModel) -> Highscore {

@@ -1,5 +1,5 @@
 use shared::{Highscore, UserAuth};
-use yew::{html, services::ConsoleService, Component, ComponentLink, Html, ShouldRender};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 use yew::{Callback, Properties};
 use yew_styles::{
     button::Button,

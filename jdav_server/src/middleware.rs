@@ -21,7 +21,7 @@ pub fn extract_basicauth(header: String) -> Result<UserAuth, AuthError> {
         String::from_utf8(base64::decode(stripped).map_err(|_| AuthError::InvalidBase64)?)
             .map_err(|_| AuthError::InvalidBase64)?;
 
-    let split = decoded.split(":").collect::<Vec<&str>>();
+    let split = decoded.split(':').collect::<Vec<&str>>();
     match split.as_slice() {
         [ref name, ref pass, ..] => Ok(UserAuth {
             name: (name.to_owned()).to_owned(),

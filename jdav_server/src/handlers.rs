@@ -47,7 +47,7 @@ pub async fn create_kilometer_entry(
         Ok(Box::new(warp::reply::json(&id.to_string())))
     } else {
         Ok(Box::new(warp::reply::with_status(
-            format!("Unauthorized"),
+            "Unauthorized".to_string(),
             StatusCode::UNAUTHORIZED,
         )))
     }
@@ -64,16 +64,16 @@ pub async fn get_highscore(
         Ok(Box::new(warp::reply::json(&highscore)))
     } else {
         Ok(Box::new(warp::reply::with_status(
-            format!("Unauthorized"),
+            "Unauthorized".to_string(),
             StatusCode::UNAUTHORIZED,
         )))
     }
 }
 
-pub async fn authorize(user: &String, header: String, database: Database) -> Result<(), ()> {
+pub async fn authorize(user: &str, header: String, database: Database) -> Result<(), ()> {
     let auth = extract_basicauth(header).map_err(|_| ())?;
 
-    if !database.authenticate_user(&auth).await || &auth.name != user {
+    if !database.authenticate_user(&auth).await || auth.name != user {
         return Err(());
     }
     Ok(())
