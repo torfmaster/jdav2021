@@ -1,25 +1,24 @@
-use base64;
 use rand::prelude::*;
-use serde_json::{from_reader, to_writer};
+use serde_json::to_writer;
 use sha2::{Digest, Sha256};
 use shared::{Highscore, HighscoreEntry, Kilometer, UserAuth};
 use std::sync::Arc;
 use tokio::fs::File;
-use tokio::sync::Mutex;
+use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::models::{DatabaseModel, Id, KilometerEntry, User};
 
-static DATABASE_FILENAME: &'static str = "./database.json";
+pub static DATABASE_FILENAME: &str = "./database.json";
 
 #[derive(Clone)]
 pub struct Database {
-    pub database: Arc<Mutex<DatabaseModel>>,
+    pub database: Arc<RwLock<DatabaseModel>>,
 }
 
 impl Database {
     pub async fn create_user(&self, new_user: UserAuth) -> bool {
-        let mut db = self.database.lock().await;
+        let mut db = self.database.write().await;
 
         let mut salt_bytes: [u8; 8] = [0; 8];
         rand::thread_rng().fill_bytes(&mut salt_bytes);
@@ -36,7 +35,6 @@ impl Database {
         };
 
         if !db.users.contains_key(&new_user.name) {
-            println!("{} registered", &new_user.name);
             db.users.insert(new_user.name, user);
             self.save_database(&db).await;
             return true;
@@ -45,7 +43,7 @@ impl Database {
     }
 
     pub async fn authenticate_user(&self, user_auth: &UserAuth) -> bool {
-        let db = self.database.lock().await;
+        let db = self.database.read().await;
 
         if db.users.contains_key(&user_auth.name) {
             let user = db.users.get(&user_auth.name).unwrap();
@@ -53,19 +51,25 @@ impl Database {
             let mut hasher = Sha256::new();
             hasher.update(user_auth.pass.clone() + &user.salt);
             let hash = base64::encode(hasher.finalize());
-            if &hash == &user.hash {
+            if hash == user.hash {
                 return true;
             }
         }
         false
     }
 
-    pub async fn create_kilometer_entry(&self, kilometer: Kilometer, user: String) -> Uuid {
-        let mut db = self.database.lock().await;
+    pub async fn create_kilometer_entry(
+        &self,
+        kilometer: Kilometer,
+        user: String,
+        kind: crate::models::Kind,
+    ) -> Uuid {
+        let mut db = self.database.write().await;
         let new_id = Uuid::new_v4();
         let new_entry: KilometerEntry = KilometerEntry {
             id: Id { id: new_id },
             kilometers: kilometer,
+            kind,
         };
 
         let entries_for_user = db.entries.get_mut(&user);
@@ -85,16 +89,13 @@ impl Database {
 
     async fn save_database(&self, db: &DatabaseModel) {
         let file = File::create(DATABASE_FILENAME).await;
-        match file {
-            Ok(json) => {
-                to_writer(json.into_std().await, &db.clone()).expect("error writing to file");
-            }
-            Err(_) => {}
+        if let Ok(json) = file {
+            to_writer(json.into_std().await, &db.clone()).expect("error writing to file");
         }
     }
 
     pub async fn get_highscore(&self) -> Highscore {
-        let db = self.database.lock().await;
+        let db = self.database.read().await;
         get_highscore(&db)
     }
 }
@@ -102,25 +103,13 @@ impl Database {
 impl Default for Database {
     fn default() -> Self {
         Database {
-            database: Arc::new(Mutex::new(DatabaseModel::default())),
+            database: Arc::new(RwLock::new(DatabaseModel::default())),
         }
     }
 }
 
 pub async fn init_db() -> Database {
-    let file = File::open(DATABASE_FILENAME).await;
-
-    match file {
-        Ok(file) => {
-            let data = from_reader(file.into_std().await).unwrap();
-            return Database {
-                database: Arc::new(Mutex::new(data)),
-            };
-        }
-        Err(_) => {
-            return Database::default();
-        }
-    }
+    crate::db::migration::migrate().await.unwrap_or_default()
 }
 
 fn get_highscore(database: &DatabaseModel) -> Highscore {
@@ -158,11 +147,13 @@ mod test {
         let kilometer_entry = KilometerEntry {
             id: id1,
             kilometers: kilometer1,
+            kind: crate::models::Kind::Running,
         };
 
         let kilometer_entry2 = KilometerEntry {
             id: id2,
             kilometers: kilometer2,
+            kind: crate::models::Kind::Running,
         };
         database
             .entries
@@ -172,7 +163,7 @@ mod test {
             .entries
             .insert("user2".to_owned(), vec![kilometer_entry2]);
 
-        let score = get_highscore(database);
+        let score = get_highscore(&database);
         let first = score.list.get(0).unwrap();
         let second = score.list.get(1).unwrap();
         assert_eq!(first.user, "user1");

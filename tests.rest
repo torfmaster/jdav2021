@@ -26,7 +26,8 @@ Authorization: Basic base64-user-password
 }
 
 ####
-PUT {{host}}/distanz/1/laufen
+PUT {{host}}/distanz/asd/laufen
+Authorization: Basic YXNkOmFzZA==
 
 {
   "kilometers": 1.4

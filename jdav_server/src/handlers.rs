@@ -3,7 +3,7 @@ use std::convert::Infallible;
 use shared::{Kilometer, UserAuth};
 use warp::{self, http::StatusCode};
 
-use crate::{db::Database, middleware::extract_basicauth};
+use crate::{db::db::Database, middleware::extract_basicauth};
 
 pub async fn create_user(
     new_user: UserAuth,
@@ -35,6 +35,7 @@ pub async fn authenticate_user(
 
 pub async fn create_kilometer_entry(
     user: String,
+    kind: crate::models::Kind,
     header: String,
     kilometer: Kilometer,
     database: Database,
@@ -42,11 +43,11 @@ pub async fn create_kilometer_entry(
     let authorization = authorize(&user, header, database.clone()).await;
 
     if authorization.is_ok() {
-        let id = database.create_kilometer_entry(kilometer, user).await;
+        let id = database.create_kilometer_entry(kilometer, user, kind).await;
         Ok(Box::new(warp::reply::json(&id.to_string())))
     } else {
         Ok(Box::new(warp::reply::with_status(
-            format!("Unauthorized"),
+            "Unauthorized".to_string(),
             StatusCode::UNAUTHORIZED,
         )))
     }
@@ -63,16 +64,16 @@ pub async fn get_highscore(
         Ok(Box::new(warp::reply::json(&highscore)))
     } else {
         Ok(Box::new(warp::reply::with_status(
-            format!("Unauthorized"),
+            "Unauthorized".to_string(),
             StatusCode::UNAUTHORIZED,
         )))
     }
 }
 
-pub async fn authorize(user: &String, header: String, database: Database) -> Result<(), ()> {
+pub async fn authorize(user: &str, header: String, database: Database) -> Result<(), ()> {
     let auth = extract_basicauth(header).map_err(|_| ())?;
 
-    if !database.authenticate_user(&auth).await || &auth.name != user {
+    if !database.authenticate_user(&auth).await || auth.name != user {
         return Err(());
     }
     Ok(())

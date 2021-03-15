@@ -15,7 +15,7 @@ struct Options {
 
 #[tokio::main]
 async fn main() {
-    let database = db::init_db().await;
+    let database = db::db::init_db().await;
 
     let opt = Options::from_args();
     if opt.use_tls {
