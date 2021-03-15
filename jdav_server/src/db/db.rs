@@ -60,13 +60,18 @@ impl Database {
         false
     }
 
-    pub async fn create_kilometer_entry(&self, kilometer: Kilometer, user: String) -> Uuid {
+    pub async fn create_kilometer_entry(
+        &self,
+        kilometer: Kilometer,
+        user: String,
+        kind: crate::models::Kind,
+    ) -> Uuid {
         let mut db = self.database.lock().await;
         let new_id = Uuid::new_v4();
         let new_entry: KilometerEntry = KilometerEntry {
             id: Id { id: new_id },
             kilometers: kilometer,
-            kind: crate::models::Kind::Running,
+            kind,
         };
 
         let entries_for_user = db.entries.get_mut(&user);

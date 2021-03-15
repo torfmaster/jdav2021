@@ -18,6 +18,8 @@ pub struct KilometerEntry {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub enum Kind {
     Running,
+    Biking,
+    Climbing,
 }
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct User {

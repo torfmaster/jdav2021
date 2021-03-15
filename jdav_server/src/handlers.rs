@@ -35,6 +35,7 @@ pub async fn authenticate_user(
 
 pub async fn create_kilometer_entry(
     user: String,
+    kind: crate::models::Kind,
     header: String,
     kilometer: Kilometer,
     database: Database,
@@ -42,7 +43,7 @@ pub async fn create_kilometer_entry(
     let authorization = authorize(&user, header, database.clone()).await;
 
     if authorization.is_ok() {
-        let id = database.create_kilometer_entry(kilometer, user).await;
+        let id = database.create_kilometer_entry(kilometer, user, kind).await;
         Ok(Box::new(warp::reply::json(&id.to_string())))
     } else {
         Ok(Box::new(warp::reply::with_status(
