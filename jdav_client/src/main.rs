@@ -32,12 +32,15 @@ enum Msg {
     Nothing,
     SetApiFetchState(FetchAction<String>),
     FinalizeLogin,
+    CloseLoginFailedModal,
+    LoginFailed,
 }
 
 enum AppState {
     LoggedOut(UserAuth),
     LoggedIn(UserAuth),
     Register,
+    LoginFailed,
 }
 
 struct Model {
@@ -105,7 +108,9 @@ impl Component for Model {
                     FetchAction::Fetched(_) => {
                         self.link.send_message(Msg::FinalizeLogin);
                     }
-                    FetchAction::Failed(_) => {}
+                    FetchAction::Failed(_) => {
+                        self.link.send_message(Msg::LoginFailed);
+                    }
                     _ => {}
                 }
                 self.api.apply(fetch_state);
@@ -119,6 +124,14 @@ impl Component for Model {
                 } else {
                     false
                 }
+            }
+            Msg::CloseLoginFailedModal => {
+                self.state = AppState::LoggedOut(Default::default());
+                true
+            }
+            Msg::LoginFailed => {
+                self.state = AppState::LoginFailed;
+                true
             }
         }
     }
@@ -173,6 +186,15 @@ impl Component for Model {
         />
         };
 
+        let login_failed_body = html! {
+            <Button
+                onclick_signal=self.link.callback(move |_| Msg::CloseLoginFailedModal )
+                button_palette=Palette::Standard
+                button_style=Style::Outline
+            >{"Schade..."}
+            </Button>
+        };
+
         match self.state {
             AppState::LoggedOut(_) => login_modal,
             AppState::LoggedIn(ref user_auth) => {
@@ -185,6 +207,23 @@ impl Component for Model {
                     <Register
                         close_action={close_action}
                     />
+                }
+            }
+            AppState::LoginFailed => {
+                html! {
+                <Modal
+                    header=html!{
+                        <b>{"Login fehlgeschlagen"}</b>
+                    }
+                    header_palette=Palette::Danger
+                    body=login_failed_body
+                    body_style=Style::Outline
+                    body_palette=Palette::Danger
+                    is_open=true
+                    onclick_signal= self.link.callback(|_|  Msg::Nothing )
+                    onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
+                    auto_focus=false
+                />
                 }
             }
         }
