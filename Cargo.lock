@@ -1145,6 +1145,7 @@ dependencies = [
  "base64 0.13.0",
  "serde",
  "serde_json",
+ "uuid",
 ]
 
 [[package]]

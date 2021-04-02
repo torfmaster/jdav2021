@@ -35,7 +35,7 @@ pub async fn authenticate_user(
 
 pub async fn create_kilometer_entry(
     user: String,
-    kind: crate::models::Kind,
+    kind: shared::Kind,
     header: String,
     kilometer: Kilometer,
     database: Database,

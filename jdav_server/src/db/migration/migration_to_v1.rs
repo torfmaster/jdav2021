@@ -1,24 +1,9 @@
-use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
+use shared::{Id, Kilometer, KilometerEntry, Kind};
+use std::collections::HashMap;
 use uuid::Uuid;
 
 use super::DatabaseVersion;
-
-#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Default)]
-pub struct Kilometer {
-    pub kilometers: f32,
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
-pub struct Id {
-    pub id: Uuid,
-}
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct KilometerEntry {
-    pub id: Id,
-    pub kilometers: Kilometer,
-}
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct User {
@@ -59,15 +44,15 @@ impl DatabaseModel {
     }
 }
 
-fn map_entry(entry: &[KilometerEntry]) -> Vec<crate::models::KilometerEntry> {
+fn map_entry(entry: &[KilometerEntry]) -> Vec<shared::KilometerEntry> {
     entry
         .iter()
-        .map(|entry| crate::models::KilometerEntry {
-            id: crate::models::Id { id: entry.id.id },
+        .map(|entry| shared::KilometerEntry {
+            id: shared::Id { id: entry.id.id },
             kilometers: shared::Kilometer {
                 kilometers: entry.kilometers.kilometers,
             },
-            kind: crate::models::Kind::Running,
+            kind: shared::Kind::Running,
         })
         .collect::<Vec<_>>()
 }

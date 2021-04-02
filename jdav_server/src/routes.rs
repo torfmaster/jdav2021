@@ -1,8 +1,7 @@
-use shared::{Kilometer, UserAuth};
+use shared::{Kilometer, Kind, UserAuth};
 use warp::{self, Filter};
 
 use crate::db::db::Database;
-use crate::models::Kind;
 use crate::{handlers, middleware::authentication_middleware, middleware::with_database};
 
 pub fn routes(

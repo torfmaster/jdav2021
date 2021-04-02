@@ -7,7 +7,8 @@ use tokio::fs::File;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::models::{DatabaseModel, Id, KilometerEntry, User};
+use crate::models::{DatabaseModel, User};
+use shared::{Id, KilometerEntry};
 
 pub static DATABASE_FILENAME: &str = "./database.json";
 
@@ -62,7 +63,7 @@ impl Database {
         &self,
         kilometer: Kilometer,
         user: String,
-        kind: crate::models::Kind,
+        kind: shared::Kind,
     ) -> Uuid {
         let mut db = self.database.write().await;
         let new_id = Uuid::new_v4();
@@ -133,7 +134,8 @@ mod test {
     use uuid::Uuid;
 
     use super::get_highscore;
-    use crate::models::{DatabaseModel, Id, KilometerEntry};
+    use crate::models::DatabaseModel;
+    use shared::{Id, KilometerEntry};
 
     #[test]
     pub fn can_process_one_kilometer_entry() {
@@ -147,13 +149,13 @@ mod test {
         let kilometer_entry = KilometerEntry {
             id: id1,
             kilometers: kilometer1,
-            kind: crate::models::Kind::Running,
+            kind: shared::Kind::Running,
         };
 
         let kilometer_entry2 = KilometerEntry {
             id: id2,
             kilometers: kilometer2,
-            kind: crate::models::Kind::Running,
+            kind: shared::Kind::Running,
         };
         database
             .entries

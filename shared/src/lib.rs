@@ -1,8 +1,26 @@
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Default)]
 pub struct Kilometer {
     pub kilometers: f32,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
+pub struct Id {
+    pub id: Uuid,
+}
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct KilometerEntry {
+    pub id: Id,
+    pub kilometers: Kilometer,
+    pub kind: Kind,
+}
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub enum Kind {
+    Running,
+    Biking,
+    Climbing,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]

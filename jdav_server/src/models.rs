@@ -1,26 +1,9 @@
 use serde::{Deserialize, Serialize};
-use shared::Kilometer;
+use shared::{Kilometer, KilometerEntry};
 use std::collections::HashMap;
-use uuid::Uuid;
 
 use crate::db::migration::DatabaseVersion;
 
-#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
-pub struct Id {
-    pub id: Uuid,
-}
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct KilometerEntry {
-    pub id: Id,
-    pub kilometers: Kilometer,
-    pub kind: Kind,
-}
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub enum Kind {
-    Running,
-    Biking,
-    Climbing,
-}
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct User {
     pub hash: String,
