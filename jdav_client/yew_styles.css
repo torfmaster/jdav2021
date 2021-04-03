@@ -1,3 +1,8 @@
+.scrolllist {
+  overflow-y: scroll;
+  height: 60vh;
+}
+
 .button {
   padding: 5px 10px;
   border: none;

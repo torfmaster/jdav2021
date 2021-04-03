@@ -1,7 +1,7 @@
 use rand::prelude::*;
 use serde_json::to_writer;
 use sha2::{Digest, Sha256};
-use shared::{Highscore, HighscoreEntry, Kilometer, UserAuth};
+use shared::{Entries, Highscore, HighscoreEntry, Kilometer, UserAuth};
 use std::sync::Arc;
 use tokio::fs::File;
 use tokio::sync::RwLock;
@@ -86,6 +86,31 @@ impl Database {
         }
         self.save_database(&db).await;
         new_id
+    }
+
+    pub async fn edit_kilometer_entry(
+        &self,
+        user: String,
+        new_kilometer_entry: KilometerEntry,
+    ) -> bool {
+        let mut db = self.database.write().await;
+
+        let entries = db.entries.get_mut(&user).unwrap();
+        for entry in entries.iter_mut() {
+            if entry.id == new_kilometer_entry.id {
+                *entry = new_kilometer_entry;
+                self.save_database(&db).await;
+                return true;
+            }
+        }
+        false
+    }
+
+    pub async fn get_entries_for_user(&self, user: String) -> Entries {
+        let db = self.database.read().await;
+        Entries {
+            list: db.entries.get(&user).unwrap().clone(),
+        }
     }
 
     async fn save_database(&self, db: &DatabaseModel) {

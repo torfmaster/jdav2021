@@ -2,6 +2,7 @@ use shared::UserAuth;
 use yew::Properties;
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
+use crate::entriesview::EntriesView;
 use crate::highscoreview::HighscoreView;
 use crate::new_entry::NewEntry;
 use yew_styles::button::Button;
@@ -16,6 +17,7 @@ pub struct OverviewProps {
 pub enum Msg {
     OpenNewEntry,
     OpenHighScore,
+    OpenEntriesView,
     CloseAction,
     Nothing,
 }
@@ -24,6 +26,7 @@ enum CurrentAction {
     Nothing,
     NewEntry,
     HighScore,
+    EntriesView,
 }
 
 pub struct Overview {
@@ -59,6 +62,10 @@ impl Component for Overview {
                 self.current_action = CurrentAction::HighScore;
                 true
             }
+            Msg::OpenEntriesView => {
+                self.current_action = CurrentAction::EntriesView;
+                true
+            }
         }
     }
 
@@ -72,6 +79,11 @@ impl Component for Overview {
             button_palette=Palette::Standard
             button_style=Style::Outline
         >{"Neuer Eintrag"}</Button>
+        <Button
+            onclick_signal=self.link.callback(move |_| Msg::OpenEntriesView )
+            button_palette=Palette::Standard
+            button_style=Style::Outline
+        >{"Meine Einträge"}</Button>
         <Button
             onclick_signal=self.link.callback(move |_| Msg::OpenHighScore )
             button_palette=Palette::Standard
@@ -110,6 +122,14 @@ impl Component for Overview {
             CurrentAction::HighScore => {
                 html! {
                     <HighscoreView
+                      auth={self.props.auth.clone()}
+                      close_action={close_action}
+                    />
+                }
+            }
+            CurrentAction::EntriesView => {
+                html! {
+                    <EntriesView
                       auth={self.props.auth.clone()}
                       close_action={close_action}
                     />

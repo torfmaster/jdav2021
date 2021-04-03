@@ -26,12 +26,16 @@ Authorization: Basic base64-user-password
 }
 
 ####
-PUT {{host}}/distanz/asd/laufen
-Authorization: Basic YXNkOmFzZA==
+PUT {{host}}/distanz/asdfg/laufen
+Authorization: Basic YXNkZmc6cXdlcnR6
 
 {
   "kilometers": 1.4
 }
+
+####
+GET {{host}}/entries/asdfg
+Authorization: Basic YXNkZmc6cXdlcnR6
 
 #### Highscore
 PUT {{host}}/highscore

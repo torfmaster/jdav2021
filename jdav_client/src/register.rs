@@ -193,7 +193,7 @@ impl Component for Register {
                 header_palette=Palette::Danger
                 body=register_failed_entry
                 body_style=Style::Outline
-                body_palette=Palette::Link
+                body_palette=Palette::Danger
                 is_open=true
                 onclick_signal= self.link.callback(|_|  Msg::Nothing )
                 onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
