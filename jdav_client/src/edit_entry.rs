@@ -164,6 +164,7 @@ impl Component for EditEntry {
             onclick_signal= self.link.callback(|_|  Msg::Nothing )
             onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
             auto_focus=false
+            class_name = "bg"
         />
         }
     }

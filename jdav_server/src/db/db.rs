@@ -145,7 +145,7 @@ fn get_highscore(database: &DatabaseModel) -> Highscore {
         .map(|(key, value)| HighscoreEntry {
             user: key.clone(),
             points: value.iter().fold(0.0, |acc, entry: &KilometerEntry| {
-                acc + entry.kilometers.kilometers
+                acc + entry.kilometers.kilometers * shared::get_kind_multiplier(&entry.kind)
             }),
         })
         .collect::<Vec<_>>();

@@ -5,6 +5,7 @@ use shared::UserAuth;
 use yew::InputData;
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
 use yew_styles::button::Button;
+use yew_styles::forms::form_group::FormGroup;
 use yew_styles::forms::form_input::FormInput;
 use yew_styles::forms::form_input::InputType;
 use yew_styles::modal::Modal;
@@ -141,12 +142,13 @@ impl Component for Model {
     fn view(&self) -> Html {
         let entry = html! {
         <div class="body-content">
+        <FormGroup>
         <FormInput
             input_type=InputType::Text
             input_palette=Palette::Standard
             input_size=Size::Medium
             oninput_signal = self.link.callback(|e: InputData| Msg::SetUserField(e.value))
-            placeholder="Username"
+            placeholder="Benutzername"
             underline=false
         />
         <FormInput
@@ -157,6 +159,7 @@ impl Component for Model {
             placeholder="Passwort"
             underline=false
         />
+        </FormGroup>
         <Button
             onclick_signal=self.link.callback(move |_| Msg::StartLogin )
             button_palette=Palette::Standard
@@ -185,6 +188,7 @@ impl Component for Model {
             onclick_signal= self.link.callback(|_|  Msg::Nothing )
             onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
             auto_focus=false
+            class_name = "bg"
         />
         };
 
@@ -225,6 +229,7 @@ impl Component for Model {
                     onclick_signal= self.link.callback(|_|  Msg::Nothing )
                     onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
                     auto_focus=false
+                    class_name = "bg"
                 />
                 }
             }
