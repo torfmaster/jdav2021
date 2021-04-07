@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use shared::{Kilometer, KilometerEntry};
+use shared::KilometerEntry;
 use std::collections::HashMap;
 
 use crate::db::migration::DatabaseVersion;

@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
-use shared::{Id, Kilometer, KilometerEntry, Kind};
+use shared::KilometerEntry;
 use std::collections::HashMap;
-use uuid::Uuid;
 
 use super::DatabaseVersion;
 
