@@ -1,13 +1,14 @@
 use rand::prelude::*;
 use serde_json::to_writer;
 use sha2::{Digest, Sha256};
-use shared::{Highscore, HighscoreEntry, Kilometer, UserAuth};
+use shared::{Entries, Highscore, HighscoreEntry, Kilometer, UserAuth};
 use std::sync::Arc;
 use tokio::fs::File;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::models::{DatabaseModel, Id, KilometerEntry, User};
+use crate::models::{DatabaseModel, User};
+use shared::{Id, KilometerEntry};
 
 pub static DATABASE_FILENAME: &str = "./database.json";
 
@@ -62,7 +63,7 @@ impl Database {
         &self,
         kilometer: Kilometer,
         user: String,
-        kind: crate::models::Kind,
+        kind: shared::Kind,
     ) -> Uuid {
         let mut db = self.database.write().await;
         let new_id = Uuid::new_v4();
@@ -85,6 +86,31 @@ impl Database {
         }
         self.save_database(&db).await;
         new_id
+    }
+
+    pub async fn edit_kilometer_entry(
+        &self,
+        user: String,
+        new_kilometer_entry: KilometerEntry,
+    ) -> bool {
+        let mut db = self.database.write().await;
+
+        let entries = db.entries.get_mut(&user).unwrap();
+        for entry in entries.iter_mut() {
+            if entry.id == new_kilometer_entry.id {
+                *entry = new_kilometer_entry;
+                self.save_database(&db).await;
+                return true;
+            }
+        }
+        false
+    }
+
+    pub async fn get_entries_for_user(&self, user: String) -> Entries {
+        let db = self.database.read().await;
+        Entries {
+            list: db.entries.get(&user).unwrap().clone(),
+        }
     }
 
     async fn save_database(&self, db: &DatabaseModel) {
@@ -133,7 +159,8 @@ mod test {
     use uuid::Uuid;
 
     use super::get_highscore;
-    use crate::models::{DatabaseModel, Id, KilometerEntry};
+    use crate::models::DatabaseModel;
+    use shared::{Id, KilometerEntry};
 
     #[test]
     pub fn can_process_one_kilometer_entry() {
@@ -147,13 +174,13 @@ mod test {
         let kilometer_entry = KilometerEntry {
             id: id1,
             kilometers: kilometer1,
-            kind: crate::models::Kind::Running,
+            kind: shared::Kind::Running,
         };
 
         let kilometer_entry2 = KilometerEntry {
             id: id2,
             kilometers: kilometer2,
-            kind: crate::models::Kind::Running,
+            kind: shared::Kind::Running,
         };
         database
             .entries

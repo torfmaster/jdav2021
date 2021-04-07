@@ -18,6 +18,8 @@ use crate::overview::Overview;
 use crate::register::Register;
 
 pub mod api;
+pub mod edit_entry;
+pub mod entriesview;
 pub mod highscoreview;
 pub mod new_entry;
 pub mod overview;

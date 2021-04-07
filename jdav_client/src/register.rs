@@ -20,6 +20,7 @@ pub struct Register {
     username: String,
     password: String,
     password_confirmation: String,
+    register_failed: bool,
 }
 
 #[derive(Clone, Properties, PartialEq)]
@@ -36,6 +37,8 @@ pub enum Msg {
     SetPasswordField(String),
     SetPasswordConfirmationField(String),
     CloseModal,
+    RegisterFailed,
+    CloseRegisterFailedModal,
 }
 
 impl Component for Register {
@@ -50,6 +53,7 @@ impl Component for Register {
             username: Default::default(),
             password: Default::default(),
             password_confirmation: Default::default(),
+            register_failed: false,
         }
     }
 
@@ -60,7 +64,9 @@ impl Component for Register {
                     FetchAction::Fetched(_) => {
                         self.link.send_message(Msg::CloseModal);
                     }
-                    FetchAction::Failed(_) => {}
+                    FetchAction::Failed(_) => {
+                        self.link.send_message(Msg::RegisterFailed);
+                    }
                     _ => {}
                 }
                 self.api.apply(fetch_state);
@@ -94,6 +100,17 @@ impl Component for Register {
                 self.props.close_action.emit(());
                 true
             }
+            Msg::RegisterFailed => {
+                self.register_failed = true;
+                true
+            }
+            Msg::CloseRegisterFailedModal => {
+                self.register_failed = false;
+                self.username = "".to_string();
+                self.password = "".to_string();
+                self.password_confirmation = "".to_string();
+                true
+            }
         }
     }
 
@@ -110,7 +127,7 @@ impl Component for Register {
         } else {
             ""
         };
-        let entry = html! {
+        let register_entry = html! {
         <div class="body-content">
         <FormGroup>
             <FormInput
@@ -155,20 +172,50 @@ impl Component for Register {
         </div>
         };
 
-        html! {
-        <Modal
-            header=html!{
-                <b>{"Registrierung"}</b>
+        let register_failed_entry = html! {
+            <>
+            <div>{"Wahrscheinlich existiert schon ein Benutzer mit dem gleichen Namen!"}</div>
+            <Button
+                onclick_signal=self.link.callback(move |_| Msg::CloseRegisterFailedModal )
+                button_palette=Palette::Standard
+                button_style=Style::Outline
+            >{"Zurück"}
+            </Button>
+            </>
+        };
+
+        if self.register_failed {
+            html! {
+            <Modal
+                header=html!{
+                    <b>{"Registrierung fehlgeschlagen"}</b>
+                }
+                header_palette=Palette::Danger
+                body=register_failed_entry
+                body_style=Style::Outline
+                body_palette=Palette::Danger
+                is_open=true
+                onclick_signal= self.link.callback(|_|  Msg::Nothing )
+                onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
+                auto_focus=false
+            />
             }
-            header_palette=Palette::Link
-            body=entry
-            body_style=Style::Outline
-            body_palette=Palette::Link
-            is_open=true
-            onclick_signal= self.link.callback(|_|  Msg::Nothing )
-            onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
-            auto_focus=false
-        />
+        } else {
+            html! {
+            <Modal
+                header=html!{
+                    <b>{"Registrierung"}</b>
+                }
+                header_palette=Palette::Link
+                body=register_entry
+                body_style=Style::Outline
+                body_palette=Palette::Link
+                is_open=true
+                onclick_signal= self.link.callback(|_|  Msg::Nothing )
+                onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
+                auto_focus=false
+            />
+            }
         }
     }
 

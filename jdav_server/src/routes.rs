@@ -1,8 +1,7 @@
-use shared::{Kilometer, UserAuth};
+use shared::{Kilometer, Kind, UserAuth};
 use warp::{self, Filter};
 
 use crate::db::db::Database;
-use crate::models::Kind;
 use crate::{handlers, middleware::authentication_middleware, middleware::with_database};
 
 pub fn routes(
@@ -18,6 +17,8 @@ pub fn routes(
         .or(create_running_entry(db.clone()))
         .or(create_biking_entry(db.clone()))
         .or(create_climbing_entry(db.clone()))
+        .or(edit_kilometer_entry(db.clone()))
+        .or(get_entries_for_user(db.clone()))
         .or(get_highscore(db))
 }
 
@@ -48,7 +49,7 @@ fn create_running_entry(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("distanz" / String / "laufen")
         .and(warp::put())
-        .and(warp::any().map(|| Kind::Biking))
+        .and(warp::any().map(|| Kind::Running))
         .and(authentication_middleware())
         .and(json_kilometer_entry())
         .and(with_database(db))
@@ -79,6 +80,36 @@ fn create_climbing_entry(
         .and_then(handlers::create_kilometer_entry)
 }
 
+fn json_kilometer_entry() -> impl Filter<Extract = (Kilometer,), Error = warp::Rejection> + Clone {
+    warp::body::content_length_limit(1024 * 16).and(warp::body::json())
+}
+
+fn edit_kilometer_entry(
+    db: Database,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("edit" / String)
+        .and(warp::put())
+        .and(authentication_middleware())
+        .and(json_edit_kilometer_entry())
+        .and(with_database(db))
+        .and_then(handlers::edit_kilometer_entry)
+}
+
+fn json_edit_kilometer_entry(
+) -> impl Filter<Extract = (shared::KilometerEntry,), Error = warp::Rejection> + Clone {
+    warp::body::content_length_limit(1024 * 16).and(warp::body::json())
+}
+
+fn get_entries_for_user(
+    db: Database,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("entries" / String)
+        .and(warp::get())
+        .and(authentication_middleware())
+        .and(with_database(db))
+        .and_then(handlers::get_entries_for_user)
+}
+
 fn get_highscore(
     db: Database,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
@@ -87,8 +118,4 @@ fn get_highscore(
         .and(authentication_middleware())
         .and(with_database(db))
         .and_then(handlers::get_highscore)
-}
-
-fn json_kilometer_entry() -> impl Filter<Extract = (Kilometer,), Error = warp::Rejection> + Clone {
-    warp::body::content_length_limit(1024 * 16).and(warp::body::json())
 }

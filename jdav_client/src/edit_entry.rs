@@ -1,5 +1,5 @@
-use crate::api::new_entry::KilometerRequest;
-use shared::UserAuth;
+use crate::api::edit_entry::KilometerEditRequest;
+use shared::{Kilometer, KilometerEntry, Kind, UserAuth};
 use yew::{html, ChangeData, Component, ComponentLink, Html, InputData, ShouldRender};
 use yew::{Callback, Properties};
 use yew_styles::forms::form_input::FormInput;
@@ -12,16 +12,17 @@ use yew_styles::{button::Button, forms::form_group::FormGroup};
 use yewtil::fetch::{Fetch, FetchAction};
 use yewtil::future::LinkFuture;
 
-pub struct NewEntry {
-    api: Fetch<KilometerRequest, String>,
+pub struct EditEntry {
+    api: Fetch<KilometerEditRequest, String>,
     link: ComponentLink<Self>,
-    kind: String,
     props: NewEntryProps,
     parsed_distance: Option<f32>,
+    kind: String,
 }
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct NewEntryProps {
+    pub entry: KilometerEntry,
     pub auth: UserAuth,
     pub close_action: Callback<()>,
 }
@@ -29,24 +30,24 @@ pub struct NewEntryProps {
 #[derive(Debug)]
 pub enum Msg {
     SetApiFetchState(FetchAction<String>),
-    PutDistance,
+    SendEdit,
     Nothing,
     SetDistanceField(String),
     SetKindField(String),
     CloseConfirmationModal,
 }
 
-impl Component for NewEntry {
+impl Component for EditEntry {
     type Message = Msg;
     type Properties = NewEntryProps;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        NewEntry {
+        EditEntry {
             api: Default::default(),
             link,
-            kind: "laufen".to_owned(),
             props,
             parsed_distance: None,
+            kind: "laufen".to_owned(),
         }
     }
 
@@ -63,12 +64,20 @@ impl Component for NewEntry {
                 self.api.apply(fetch_state);
                 true
             }
-            Msg::PutDistance => {
+            Msg::SendEdit => {
                 if let Some(parsed_distance) = self.parsed_distance {
-                    self.api.set_req(KilometerRequest::new(
-                        parsed_distance,
+                    self.props.entry.kilometers = Kilometer {
+                        kilometers: parsed_distance,
+                    };
+                    self.props.entry.kind = match self.kind.as_str() {
+                        "laufen" => Kind::Running,
+                        "radfahren" => Kind::Biking,
+                        "klettern" => Kind::Climbing,
+                        _ => Kind::Running,
+                    };
+                    self.api.set_req(KilometerEditRequest::new(
                         self.props.auth.clone(),
-                        self.kind.clone(),
+                        self.props.entry.clone(),
                     ));
                     self.link.send_future(self.api.fetch(Msg::SetApiFetchState));
                     self.link
@@ -125,12 +134,12 @@ impl Component for NewEntry {
                 error_state=self.parsed_distance.is_none()
                 error_message=error
                 oninput_signal = self.link.callback(|e: InputData| Msg::SetDistanceField(e.value))
-                placeholder="Distanz"
+                placeholder=self.props.entry.kilometers.kilometers.to_string()
                 underline=false
             />
         </FormGroup>
         <Button
-            onclick_signal=self.link.callback(move |_| Msg::PutDistance )
+            onclick_signal=self.link.callback(move |_| Msg::SendEdit )
             button_palette=Palette::Standard
             button_style=Style::Outline
         >{"Abschicken"}</Button>
@@ -145,7 +154,7 @@ impl Component for NewEntry {
         html! {
         <Modal
             header=html!{
-                <b>{"Leistungen eintragen"}</b>
+                <b>{"Leistungen bearbeiten"}</b>
             }
             header_palette=Palette::Link
             body=entry
