@@ -101,49 +101,6 @@ impl Component for EntriesView {
     }
 
     fn view(&self) -> Html {
-        // let entries = self.content.list.iter().enumerate().map(|(pos, item)| {
-        //     html! {
-        //         <Container direction=Direction::Row wrap=Wrap::Nowrap class_name="align-item">
-        //         <Item layouts=vec!(ItemLayout::ItXs(1)) align_self=AlignSelf::FlexStart>
-        //             {pos+1}
-        //         </Item>
-        //         <Item layouts=vec!(ItemLayout::ItXs(5)) align_self=AlignSelf::FlexStart>
-        //             {item.kind.clone()}
-        //         </Item>
-        //         <Item layouts=vec!(ItemLayout::ItXs(5)) align_self=AlignSelf::FlexStart>
-        //             {item.kilometers.clone()}
-        //         </Item>
-        //         <Item layouts=vec!(ItemLayout::ItXs(5)) align_self=AlignSelf::FlexStart>
-        //             <Button
-        //                 onclick_signal=self.link.callback(move |_| Msg::CloseModal )
-        //                 button_palette=Palette::Standard
-        //                 button_style=Style::Outline
-        //             >{"Bearbeiten"}</Button>
-        //         </Item>
-        //         </Container>
-        //     }
-        // });
-
-        // let entries_table = html! {
-        //     <Container direction=Direction::Column wrap=Wrap::Wrap class_name="align-item">
-        //         <Container direction=Direction::Row wrap=Wrap::Nowrap class_name="align-item">
-        //             <Item layouts=vec!(ItemLayout::ItXs(1)) align_self=AlignSelf::FlexStart>
-        //                 {"Nummer"}
-        //             </Item>
-        //             <Item layouts=vec!(ItemLayout::ItXs(5)) align_self=AlignSelf::FlexStart>
-        //                 {"Art"}
-        //             </Item>
-        //             <Item layouts=vec!(ItemLayout::ItXs(5)) align_self=AlignSelf::FlexStart>
-        //                 {"Distanz"}
-        //             </Item>
-        //             <Item layouts=vec!(ItemLayout::ItXs(5)) align_self=AlignSelf::FlexStart>
-        //                 {"Ändern"}
-        //             </Item>
-        //         </Container>
-        //         {entries.collect::<Html>()}
-        //     </Container>
-        // };
-
         let entries = self.content.list.iter().enumerate().rev().map(|(idx, item)| {
             let card_pal = match item.kind {
                 shared::Kind::Biking => Palette::Primary,
