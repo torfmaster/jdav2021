@@ -14,6 +14,8 @@ yew_styles = { version="0.9", features= ["button", "forms", "modal", "layouts", 
 yewtil = { version = "0.3.2", features = ["future", "fetch"] }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
+chrono = {version="0.4.19", features=["serde", "std"]}
+
 
 [dependencies.web-sys]
 version = "0.3"

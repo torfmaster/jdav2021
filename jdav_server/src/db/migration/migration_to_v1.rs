@@ -1,3 +1,4 @@
+use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 use shared::KilometerEntry;
 use std::collections::HashMap;
@@ -52,6 +53,7 @@ fn map_entry(entry: &[KilometerEntry]) -> Vec<shared::KilometerEntry> {
                 kilometers: entry.kilometers.kilometers,
             },
             kind: shared::Kind::Running,
+            timestamp: Utc::now(),
         })
         .collect::<Vec<_>>()
 }

@@ -1,3 +1,4 @@
+use chrono::prelude::*;
 use shared::{Entries, UserAuth};
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
 use yew::{Callback, Properties};
@@ -116,6 +117,8 @@ impl Component for EntriesView {
                         header=html!{<b>{item.kind.clone()}</b>}
                         body=html!{
                             <div>
+                                {item.timestamp.with_timezone(&FixedOffset::east(2*3600)).format("Vom: %d.%m.%y, %H:%M").to_string()}
+                                <br/>
                                 {format!("Distanz: {}", item.kilometers.clone())}
                                 <br/>
                                 <Button
