@@ -5,7 +5,6 @@ use yew::{html, Component, ComponentLink, Html, ShouldRender};
 use crate::entriesview::EntriesView;
 use crate::highscoreview::HighscoreView;
 use crate::new_entry::NewEntry;
-use yew_styles::button::Button;
 use yew_styles::modal::Modal;
 use yew_styles::styles::Palette;
 use yew_styles::styles::Style;

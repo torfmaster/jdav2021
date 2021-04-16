@@ -41,11 +41,13 @@ pub enum Kind {
     Climbing,
 }
 
-pub fn get_kind_multiplier(k: &Kind) -> f32 {
-    match k {
-        Kind::Running => 1.0,
-        Kind::Biking => 0.1,
-        Kind::Climbing => 10.0,
+impl Kind {
+    pub fn get_kind_multiplier(&self) -> f32 {
+        match self {
+            Kind::Running => 1.0,
+            Kind::Biking => 0.1,
+            Kind::Climbing => 10.0,
+        }
     }
 }
 

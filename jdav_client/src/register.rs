@@ -1,7 +1,5 @@
 use crate::api::register::RegisterRequest;
-use yew::{
-    html, services::ConsoleService, Component, ComponentLink, Html, InputData, ShouldRender,
-};
+use yew::{html, Component, ComponentLink, Html, InputData, ShouldRender};
 use yew::{Callback, Properties};
 use yew_styles::forms::form_input::FormInput;
 use yew_styles::forms::form_input::InputType;
