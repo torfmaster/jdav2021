@@ -1,3 +1,4 @@
+use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use uuid::Uuid;
@@ -22,6 +23,7 @@ pub struct KilometerEntry {
     pub id: Id,
     pub kilometers: Kilometer,
     pub kind: Kind,
+    pub timestamp: DateTime<Utc>,
 }
 
 impl Default for KilometerEntry {
@@ -30,6 +32,7 @@ impl Default for KilometerEntry {
             id: Id { id: Uuid::nil() },
             kilometers: Kilometer { kilometers: 0.0 },
             kind: Kind::Biking,
+            timestamp: Utc.ymd(1970, 1, 1).and_hms(0, 0, 0),
         }
     }
 }

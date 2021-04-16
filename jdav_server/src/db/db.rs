@@ -1,3 +1,4 @@
+use chrono::prelude::*;
 use rand::prelude::*;
 use serde_json::to_writer;
 use sha2::{Digest, Sha256};
@@ -71,6 +72,7 @@ impl Database {
             id: Id { id: new_id },
             kilometers: kilometer,
             kind,
+            timestamp: Utc::now(),
         };
 
         let entries_for_user = db.entries.get_mut(&user);
@@ -162,6 +164,8 @@ mod test {
     use crate::models::DatabaseModel;
     use shared::{Id, KilometerEntry};
 
+    use chrono::prelude::*;
+
     #[test]
     pub fn can_process_one_kilometer_entry() {
         let mut database: DatabaseModel = Default::default();
@@ -175,12 +179,14 @@ mod test {
             id: id1,
             kilometers: kilometer1,
             kind: shared::Kind::Running,
+            timestamp: Utc::now(),
         };
 
         let kilometer_entry2 = KilometerEntry {
             id: id2,
             kilometers: kilometer2,
             kind: shared::Kind::Running,
+            timestamp: Utc::now(),
         };
         database
             .entries
