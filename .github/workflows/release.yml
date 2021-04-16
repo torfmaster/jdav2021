@@ -53,7 +53,7 @@ jobs:
         env:
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
-          sshpass -e ssh -o StrictHostKeyChecking=no deploy@kebes.dnshome.de "killall -9 jdav_server" || true
+          sshpass -e ssh -o StrictHostKeyChecking=no deploy@kebes.dnshome.de "killall jdav_server" || true
           sshpass -e scp -o StrictHostKeyChecking=no target/armv7-unknown-linux-gnueabihf/release/jdav_server deploy@kebes.dnshome.de:/home/deploy 
           sshpass -e scp -r -o StrictHostKeyChecking=no jdav_client/dist deploy@kebes.dnshome.de:/home/deploy 
           sshpass -e ssh -o StrictHostKeyChecking=no deploy@kebes.dnshome.de "nohup ./jdav_server --use-tls> foo.out 2> foo.err < /dev/null &"
