@@ -41,6 +41,16 @@ pub enum Kind {
     Climbing,
 }
 
+impl Kind {
+    pub fn get_kind_multiplier(&self) -> f32 {
+        match self {
+            Kind::Running => 1.0,
+            Kind::Biking => 0.1,
+            Kind::Climbing => 10.0,
+        }
+    }
+}
+
 impl fmt::Display for Kind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {

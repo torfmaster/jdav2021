@@ -1,6 +1,20 @@
+* {
+  font-family: Helvetica;
+}
+
 .scrolllist {
   overflow-y: scroll;
   height: 60vh;
+}
+
+.bg {
+  background-image: url("logo1.png");
+
+  width: 100%;
+
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
 .button {
@@ -8,7 +22,6 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-family: Rosario;
 }
 .button.small {
   font-size: 12px;
@@ -2329,7 +2342,6 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-family: Rosario;
 }
 .form-submit.small {
   font-size: 12px;
@@ -3454,6 +3466,7 @@
   padding: 10px;
   height: 250px;
   border-radius: 5px;
+  justify-content: center;
 }
 .card.small {
   height: 150px;
@@ -5079,9 +5092,6 @@
   border: none;
 }
 
-.plain-text, .paragraph-text, .alert-text, .tag-text {
-  font-family: Rosario;
-}
 .plain-text.small, .paragraph-text.small, .alert-text.small, .tag-text.small {
   font-size: 12px;
 }

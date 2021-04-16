@@ -5,10 +5,10 @@ use yew::{html, Component, ComponentLink, Html, ShouldRender};
 use crate::entriesview::EntriesView;
 use crate::highscoreview::HighscoreView;
 use crate::new_entry::NewEntry;
-use yew_styles::button::Button;
 use yew_styles::modal::Modal;
 use yew_styles::styles::Palette;
 use yew_styles::styles::Style;
+use yew_styles::{card::Card, styles::Size};
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct OverviewProps {
@@ -73,22 +73,28 @@ impl Component for Overview {
         let close_action = self.link.callback(|_| Msg::CloseAction);
 
         let entry = html! {
-        <div class="body-content">
-        <Button
+        <div>
+        <Card
+            card_size=Size::Small
+            card_palette=Palette::Success
+            card_style=Style::Outline
+            body=html!{<h1>{"Neuer Eintrag"}</h1>}
             onclick_signal=self.link.callback(move |_| Msg::OpenNewEntry )
-            button_palette=Palette::Standard
-            button_style=Style::Outline
-        >{"Neuer Eintrag"}</Button>
-        <Button
+        />
+        <Card
+            card_size=Size::Small
+            card_palette=Palette::Success
+            card_style=Style::Outline
+            body=html!{<h1>{"Meine Einträge"}</h1>}
             onclick_signal=self.link.callback(move |_| Msg::OpenEntriesView )
-            button_palette=Palette::Standard
-            button_style=Style::Outline
-        >{"Meine Einträge"}</Button>
-        <Button
+        />
+        <Card
+            card_size=Size::Small
+            card_palette=Palette::Success
+            card_style=Style::Outline
+            body=html!{<h1>{"Highscore"}</h1>}
             onclick_signal=self.link.callback(move |_| Msg::OpenHighScore )
-            button_palette=Palette::Standard
-            button_style=Style::Outline
-        >{"Highscore"}</Button>
+        />
         </div>
         };
 
@@ -105,6 +111,7 @@ impl Component for Overview {
             onclick_signal= self.link.callback(|_|  Msg::Nothing )
             onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
             auto_focus=false
+            class_name = "bg"
         />
         };
 

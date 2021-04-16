@@ -1,4 +1,4 @@
-use shared::{KilometerEntry, UserAuth};
+use shared::UserAuth;
 use yewtil::fetch::{FetchRequest, Json, MethodBody};
 
 #[derive(Debug, Clone, PartialEq, Default)]

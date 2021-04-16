@@ -1,4 +1,4 @@
-use shared::{Entries, Kilometer, KilometerEntry, UserAuth};
+use shared::{Entries, UserAuth};
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
 use yew::{Callback, Properties};
 use yew_styles::{
@@ -167,6 +167,7 @@ impl Component for EntriesView {
                     onclick_signal= self.link.callback(|_|  Msg::Nothing )
                     onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
                     auto_focus=false
+                    class_name = "bg"
                 />
                 }
             }

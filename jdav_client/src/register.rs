@@ -1,7 +1,5 @@
 use crate::api::register::RegisterRequest;
-use yew::{
-    html, services::ConsoleService, Component, ComponentLink, Html, InputData, ShouldRender,
-};
+use yew::{html, Component, ComponentLink, Html, InputData, ShouldRender};
 use yew::{Callback, Properties};
 use yew_styles::forms::form_input::FormInput;
 use yew_styles::forms::form_input::InputType;
@@ -198,6 +196,7 @@ impl Component for Register {
                 onclick_signal= self.link.callback(|_|  Msg::Nothing )
                 onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
                 auto_focus=false
+                class_name = "bg"
             />
             }
         } else {
@@ -214,6 +213,7 @@ impl Component for Register {
                 onclick_signal= self.link.callback(|_|  Msg::Nothing )
                 onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
                 auto_focus=false
+                class_name = "bg"
             />
             }
         }
