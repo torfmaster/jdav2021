@@ -94,7 +94,7 @@ impl Component for HighscoreView {
         });
 
         let highscore_table = html! {
-            <Container direction=Direction::Column wrap=Wrap::Wrap class_name="align-item">
+            <Container direction=Direction::Column wrap=Wrap::Nowrap class_name="scrolllist">
                 <Container direction=Direction::Row wrap=Wrap::Wrap class_name="align-item">
                     <Item layouts=vec!(ItemLayout::ItXs(4)) align_self=AlignSelf::FlexStart>
                         {"Platz"}
