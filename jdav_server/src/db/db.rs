@@ -111,7 +111,7 @@ impl Database {
     pub async fn get_entries_for_user(&self, user: String) -> Entries {
         let db = self.database.read().await;
         Entries {
-            list: db.entries.get(&user).unwrap().clone(),
+            list: db.entries.get(&user).unwrap_or(&Vec::new()).clone(),
         }
     }
 
