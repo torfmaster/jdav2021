@@ -1,4 +1,5 @@
 use crate::api::new_entry::KilometerRequest;
+use shared::Kind;
 use shared::UserAuth;
 use yew::{html, ChangeData, Component, ComponentLink, Html, InputData, ShouldRender};
 use yew::{Callback, Properties};
@@ -113,9 +114,12 @@ impl Component for NewEntry {
                 onchange_signal = self.link.callback(select_callback)
                 options=html!{
                     <>
-                    <option value="laufen">{"Laufen"}</option>
-                    <option value="radfahren">{"Radfahren"}</option>
-                    <option value="klettern">{"Klettern"}</option>
+                    <option value={Kind::Running.get_path()}>{"Laufen"}</option>
+                    <option value={Kind::Biking.get_path()}>{"Radfahren"}</option>
+                    <option value={Kind::Climbing.get_path()}>{"Klettern"}</option>
+                    <option value={Kind::Hiking.get_path()}>{"Wandern"}</option>
+                    <option value={Kind::Swimming.get_path()}>{"Schwimmen"}</option>
+                    <option value={Kind::Skating.get_path()}>{"Skaten"}</option>
                     </>
                 }
             />
