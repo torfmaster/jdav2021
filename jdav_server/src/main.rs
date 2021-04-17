@@ -5,9 +5,11 @@ mod models;
 mod routes;
 
 use structopt::StructOpt;
-use tokio::sync::oneshot::Sender;
 
+#[cfg(unix)]
 use tokio::sync::oneshot;
+#[cfg(unix)]
+use tokio::sync::oneshot::Sender;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "jdav_server")]
@@ -25,31 +27,50 @@ async fn main() {
 
     let opt = Options::from_args();
 
-    let (shutdown_trigger, shutdown_command) = oneshot::channel::<ShutDownCommand>();
+    #[cfg(unix)]
+    {
+        let (shutdown_trigger, shutdown_command) = oneshot::channel::<ShutDownCommand>();
 
-    handle_shutdown(shutdown_trigger);
+        handle_shutdown(shutdown_trigger);
 
-    let signal_handler = async {
-        shutdown_command.await.ok();
-        println!("Gracefully shutting down");
-    };
+        let signal_handler = async {
+            shutdown_command.await.ok();
+            println!("Gracefully shutting down");
+        };
 
-    if opt.use_tls {
-        warp::serve(routes::routes(database.clone()))
-            .tls()
-            .cert_path("/etc/letsencrypt/live/kebes.dnshome.de/fullchain.pem")
-            .key_path("/etc/letsencrypt/live/kebes.dnshome.de/privkey.pem")
-            .bind_with_graceful_shutdown(([0, 0, 0, 0], 8443), signal_handler)
-            .1
-            .await;
-    } else {
-        warp::serve(routes::routes(database.clone()))
-            .bind_with_graceful_shutdown(([0, 0, 0, 0], 8080), signal_handler)
-            .1
-            .await;
-    };
+        if opt.use_tls {
+            warp::serve(routes::routes(database.clone()))
+                .tls()
+                .cert_path("/etc/letsencrypt/live/kebes.dnshome.de/fullchain.pem")
+                .key_path("/etc/letsencrypt/live/kebes.dnshome.de/privkey.pem")
+                .bind_with_graceful_shutdown(([0, 0, 0, 0], 8443), signal_handler)
+                .1
+                .await;
+        } else {
+            warp::serve(routes::routes(database.clone()))
+                .bind_with_graceful_shutdown(([0, 0, 0, 0], 8080), signal_handler)
+                .1
+                .await;
+        };
+    }
+    #[cfg(windows)]
+    {
+        if opt.use_tls {
+            warp::serve(routes::routes(database.clone()))
+                .tls()
+                .cert_path("/etc/letsencrypt/live/kebes.dnshome.de/fullchain.pem")
+                .key_path("/etc/letsencrypt/live/kebes.dnshome.de/privkey.pem")
+                .run(([0, 0, 0, 0], 8443))
+                .await;
+        } else {
+            warp::serve(routes::routes(database.clone()))
+                .run(([0, 0, 0, 0], 8080))
+                .await;
+        };
+    }
 }
 
+#[cfg(unix)]
 fn handle_shutdown(tx: Sender<ShutDownCommand>) {
     use tokio::signal::unix::{signal, SignalKind};
 
