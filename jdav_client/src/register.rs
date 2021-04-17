@@ -113,10 +113,11 @@ impl Component for Register {
     }
 
     fn view(&self) -> Html {
-        let username_has_error = self.username == "";
+        let username_has_error = !is_valid_username(&self.username);
         let password_has_error = self.password != self.password_confirmation;
+        let can_register = !(username_has_error || password_has_error);
         let username_error_message = if username_has_error {
-            "Darf nicht leer sein "
+            "Darf kein Leerzeichen enthalten und nur aus Groß-, Kleinbuchstaben und Zahlen bestehen."
         } else {
             ""
         };
@@ -158,7 +159,7 @@ impl Component for Register {
             />
         </FormGroup>
         <Button
-            onclick_signal=self.link.callback(move |_| Msg::SendRegister )
+            onclick_signal=self.link.callback(move |_| if can_register { Msg::SendRegister } else { Msg::Nothing } )
             button_palette=Palette::Standard
             button_style=Style::Outline
         >{"Registrieren"}</Button>
@@ -226,5 +227,31 @@ impl Component for Register {
         } else {
             false
         }
+    }
+}
+
+fn is_valid_username(username: &str) -> bool {
+    username
+        .chars()
+        .into_iter()
+        .all(|c| c.is_ascii_alphanumeric())
+}
+
+#[cfg(test)]
+mod test {
+    use super::is_valid_username;
+    #[test]
+    pub fn space_is_bad() {
+        assert_eq!(is_valid_username("a b"), false);
+    }
+
+    #[test]
+    pub fn reasonable_usernames_are_good() {
+        assert_eq!(is_valid_username("hase123"), true);
+    }
+
+    #[test]
+    pub fn umlauts_are_bad() {
+        assert_eq!(is_valid_username("häsin123"), false);
     }
 }
