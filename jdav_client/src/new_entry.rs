@@ -100,7 +100,7 @@ impl Component for NewEntry {
         };
 
         let error = if self.parsed_distance.is_none() {
-            "Muss eine gültige Zahl sein, z.B. 1.0"
+            "Muss eine gültige Zahl sein, z.B. 1.0 (mit Punkt!)"
         } else {
             ""
         };
@@ -125,7 +125,7 @@ impl Component for NewEntry {
                 error_state=self.parsed_distance.is_none()
                 error_message=error
                 oninput_signal = self.link.callback(|e: InputData| Msg::SetDistanceField(e.value))
-                placeholder="Distanz"
+                placeholder="Distanz (in km)"
                 underline=false
             />
         </FormGroup>
