@@ -17,6 +17,9 @@ pub fn routes(
         .or(create_running_entry(db.clone()))
         .or(create_biking_entry(db.clone()))
         .or(create_climbing_entry(db.clone()))
+        .or(create_swimming_entry(db.clone()))
+        .or(create_skating_entry(db.clone()))
+        .or(create_hiking_entry(db.clone()))
         .or(edit_kilometer_entry(db.clone()))
         .or(get_entries_for_user(db.clone()))
         .or(get_highscore(db))
@@ -74,6 +77,42 @@ fn create_climbing_entry(
     warp::path!("distanz" / String / "klettern")
         .and(warp::put())
         .and(warp::any().map(|| Kind::Climbing))
+        .and(authentication_middleware())
+        .and(json_kilometer_entry())
+        .and(with_database(db))
+        .and_then(handlers::create_kilometer_entry)
+}
+
+fn create_swimming_entry(
+    db: Database,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("distanz" / String / "schwimmen")
+        .and(warp::put())
+        .and(warp::any().map(|| Kind::Swimming))
+        .and(authentication_middleware())
+        .and(json_kilometer_entry())
+        .and(with_database(db))
+        .and_then(handlers::create_kilometer_entry)
+}
+
+fn create_skating_entry(
+    db: Database,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("distanz" / String / "skaten")
+        .and(warp::put())
+        .and(warp::any().map(|| Kind::Skating))
+        .and(authentication_middleware())
+        .and(json_kilometer_entry())
+        .and(with_database(db))
+        .and_then(handlers::create_kilometer_entry)
+}
+
+fn create_hiking_entry(
+    db: Database,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("distanz" / String / "wandern")
+        .and(warp::put())
+        .and(warp::any().map(|| Kind::Hiking))
         .and(authentication_middleware())
         .and(json_kilometer_entry())
         .and(with_database(db))

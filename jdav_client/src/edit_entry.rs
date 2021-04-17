@@ -47,7 +47,7 @@ impl Component for EditEntry {
             link,
             props,
             parsed_distance: None,
-            kind: "laufen".to_owned(),
+            kind: Kind::Running.get_path(),
         }
     }
 
@@ -69,12 +69,8 @@ impl Component for EditEntry {
                     self.props.entry.kilometers = Kilometer {
                         kilometers: parsed_distance,
                     };
-                    self.props.entry.kind = match self.kind.as_str() {
-                        "laufen" => Kind::Running,
-                        "radfahren" => Kind::Biking,
-                        "klettern" => Kind::Climbing,
-                        _ => Kind::Running,
-                    };
+                    self.props.entry.kind =
+                        Kind::from_string(self.kind.as_str()).unwrap_or(Kind::Running);
                     self.api.set_req(KilometerEditRequest::new(
                         self.props.auth.clone(),
                         self.props.entry.clone(),
@@ -122,9 +118,12 @@ impl Component for EditEntry {
                 onchange_signal = self.link.callback(select_callback)
                 options=html!{
                     <>
-                    <option value="laufen">{"Laufen"}</option>
-                    <option value="radfahren">{"Radfahren"}</option>
-                    <option value="klettern">{"Klettern"}</option>
+                    <option value={Kind::Running.get_path()}>{"Laufen"}</option>
+                    <option value={Kind::Biking.get_path()}>{"Radfahren"}</option>
+                    <option value={Kind::Climbing.get_path()}>{"Klettern"}</option>
+                    <option value={Kind::Hiking.get_path()}>{"Wandern"}</option>
+                    <option value={Kind::Swimming.get_path()}>{"Schwimmen"}</option>
+                    <option value={Kind::Skating.get_path()}>{"Skaten"}</option>
                     </>
                 }
             />

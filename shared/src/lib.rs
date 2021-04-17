@@ -42,14 +42,44 @@ pub enum Kind {
     Running,
     Biking,
     Climbing,
+    Skating,
+    Hiking,
+    Swimming,
 }
 
 impl Kind {
     pub fn get_kind_multiplier(&self) -> f32 {
         match self {
             Kind::Running => 1.0,
-            Kind::Biking => 0.1,
-            Kind::Climbing => 10.0,
+            Kind::Biking => 0.25,
+            Kind::Climbing => 100.0,
+            Kind::Skating => 0.75,
+            Kind::Hiking => 2.0,
+            Kind::Swimming => 10.0,
+        }
+    }
+
+    pub fn get_path(&self) -> String {
+        match self {
+            Kind::Running => "laufen",
+            Kind::Biking => "radfahren",
+            Kind::Climbing => "klettern",
+            Kind::Skating => "skaten",
+            Kind::Hiking => "wandern",
+            Kind::Swimming => "schwimmen",
+        }
+        .to_owned()
+    }
+
+    pub fn from_string(input: &str) -> Option<Self> {
+        match input {
+            "laufen" => Some(Kind::Running),
+            "radfahren" => Some(Kind::Biking),
+            "klettern" => Some(Kind::Climbing),
+            "skaten" => Some(Kind::Skating),
+            "schwimmen" => Some(Kind::Swimming),
+            "wandern" => Some(Kind::Hiking),
+            _ => None,
         }
     }
 }
@@ -60,6 +90,9 @@ impl fmt::Display for Kind {
             Kind::Biking => write!(f, "Radeln"),
             Kind::Climbing => write!(f, "Klettern"),
             Kind::Running => write!(f, "Laufen"),
+            Kind::Skating => write!(f, "Skaten"),
+            Kind::Hiking => write!(f, "Wandern"),
+            Kind::Swimming => write!(f, "Schwimmen"),
         }
     }
 }
@@ -99,4 +132,42 @@ pub struct HighscoreEntry {
 #[derive(Debug, Deserialize, Serialize, PartialEq, Clone, Default)]
 pub struct Entries {
     pub list: Vec<KilometerEntry>,
+}
+
+#[cfg(test)]
+mod test {
+    use super::Kind;
+
+    #[test]
+    pub fn does_conversion() {
+        assert_eq!(
+            Some(Kind::Climbing),
+            Kind::from_string(&Kind::Climbing.get_path()),
+        );
+        assert_eq!(
+            Some(Kind::Hiking),
+            Kind::from_string(&Kind::Hiking.get_path()),
+        );
+        assert_eq!(
+            Some(Kind::Running),
+            Kind::from_string(&Kind::Running.get_path()),
+        );
+        assert_eq!(
+            Some(Kind::Swimming),
+            Kind::from_string(&Kind::Swimming.get_path()),
+        );
+        assert_eq!(
+            Some(Kind::Biking),
+            Kind::from_string(&Kind::Biking.get_path()),
+        );
+        assert_eq!(
+            Some(Kind::Skating),
+            Kind::from_string(&Kind::Skating.get_path()),
+        );
+    }
+
+    #[test]
+    pub fn rejects_unknown() {
+        assert_eq!(None, Kind::from_string("wurst"),);
+    }
 }
