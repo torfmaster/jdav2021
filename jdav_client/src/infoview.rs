@@ -1,5 +1,4 @@
 use enum_iterator::IntoEnumIterator;
-use shared::{Highscore, UserAuth};
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
 use yew::{Callback, Properties};
 use yew_styles::{
@@ -9,7 +8,6 @@ use yew_styles::{
 use yew_styles::{layouts::container::Container, styles::Style};
 use yew_styles::{layouts::container::Direction, modal::Modal};
 use yew_styles::{layouts::container::Wrap, styles::Palette};
-use yewtil::fetch::{Fetch, FetchAction};
 
 pub struct InfoView {
     link: ComponentLink<Self>,
@@ -32,8 +30,7 @@ impl Component for InfoView {
     type Properties = InfoProps;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let model = InfoView { link, props };
-        model
+        InfoView { link, props }
     }
 
     fn update(&mut self, message: Self::Message) -> bool {
