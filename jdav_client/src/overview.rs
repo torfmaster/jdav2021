@@ -4,6 +4,7 @@ use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use crate::entriesview::EntriesView;
 use crate::highscoreview::HighscoreView;
+use crate::infoview::InfoView;
 use crate::new_entry::NewEntry;
 use yew_styles::modal::Modal;
 use yew_styles::styles::Palette;
@@ -18,6 +19,7 @@ pub enum Msg {
     OpenNewEntry,
     OpenHighScore,
     OpenEntriesView,
+    OpenInfoView,
     CloseAction,
     Nothing,
 }
@@ -27,6 +29,7 @@ enum CurrentAction {
     NewEntry,
     HighScore,
     EntriesView,
+    InfoView,
 }
 
 pub struct Overview {
@@ -66,6 +69,10 @@ impl Component for Overview {
                 self.current_action = CurrentAction::EntriesView;
                 true
             }
+            Msg::OpenInfoView => {
+                self.current_action = CurrentAction::InfoView;
+                true
+            }
         }
     }
 
@@ -92,9 +99,17 @@ impl Component for Overview {
             card_size=Size::Small
             card_palette=Palette::Success
             card_style=Style::Outline
+            body=html!{<h1>{"Info"}</h1>}
+            onclick_signal=self.link.callback(move |_| Msg::OpenInfoView )
+        />
+        <Card
+            card_size=Size::Small
+            card_palette=Palette::Success
+            card_style=Style::Outline
             body=html!{<h1>{"Highscore"}</h1>}
             onclick_signal=self.link.callback(move |_| Msg::OpenHighScore )
         />
+        
         </div>
         };
 
@@ -139,6 +154,13 @@ impl Component for Overview {
                     <EntriesView
                       auth={self.props.auth.clone()}
                       close_action={close_action}
+                    />
+                }
+            }
+            CurrentAction::InfoView => {
+                html! {
+                    <InfoView
+                        close_action={close_action}
                     />
                 }
             }
