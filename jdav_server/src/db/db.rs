@@ -47,6 +47,10 @@ impl Database {
     pub async fn authenticate_user(&self, user_auth: &UserAuth) -> bool {
         let db = self.database.read().await;
 
+        if user_auth.name == "" {
+            return false;
+        }
+
         if db.users.contains_key(&user_auth.name) {
             let user = db.users.get(&user_auth.name).unwrap();
 
