@@ -12,6 +12,7 @@ use yew_styles::modal::Modal;
 use yew_styles::styles::Palette;
 use yew_styles::styles::Size;
 use yew_styles::styles::Style;
+use yew_styles::text::{Text, TextType};
 use yewtil::fetch::{Fetch, FetchAction};
 use yewtil::future::LinkFuture;
 
@@ -22,10 +23,10 @@ pub mod api;
 pub mod edit_entry;
 pub mod entriesview;
 pub mod highscoreview;
+mod infoview;
 pub mod new_entry;
 pub mod overview;
 pub mod register;
-mod infoview;
 
 enum Msg {
     StartLogin,
@@ -171,6 +172,16 @@ impl Component for Model {
             button_palette=Palette::Standard
             button_style=Style::Outline
         >{"Registrieren"}</Button>
+        <FormGroup>
+        <a href="https://www.alpenverein-regensburg.de/index.php/impressum">
+            <Text
+                text_type=TextType::Plain
+                text_size=Size::Small
+                plain_text="Impressum"
+                html_text=None
+            />
+        </a>
+        </FormGroup>
         </div>
         };
 
