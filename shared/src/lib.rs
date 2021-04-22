@@ -1,4 +1,5 @@
 use chrono::prelude::*;
+use enum_iterator::IntoEnumIterator;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use uuid::Uuid;
@@ -37,7 +38,7 @@ impl Default for KilometerEntry {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Clone, IntoEnumIterator)]
 pub enum Kind {
     Running,
     Biking,

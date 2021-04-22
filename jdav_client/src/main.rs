@@ -25,6 +25,7 @@ pub mod highscoreview;
 pub mod new_entry;
 pub mod overview;
 pub mod register;
+mod infoview;
 
 enum Msg {
     StartLogin,
