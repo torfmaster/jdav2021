@@ -231,10 +231,11 @@ impl Component for Register {
 }
 
 fn is_valid_username(username: &str) -> bool {
-    username
-        .chars()
-        .into_iter()
-        .all(|c| c.is_ascii_alphanumeric())
+    username != ""
+        && username
+            .chars()
+            .into_iter()
+            .all(|c| c.is_ascii_alphanumeric())
 }
 
 #[cfg(test)]
@@ -253,5 +254,10 @@ mod test {
     #[test]
     pub fn umlauts_are_bad() {
         assert_eq!(is_valid_username("häsin123"), false);
+    }
+
+    #[test]
+    pub fn empty_users_are_bad() {
+        assert_eq!(is_valid_username(""), false);
     }
 }
