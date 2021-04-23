@@ -3,7 +3,11 @@
 }
 
 .scrolllist {
+  height: 60vh;
   overflow-y: scroll;
+}
+
+.overview {
   height: 60vh;
 }
 
