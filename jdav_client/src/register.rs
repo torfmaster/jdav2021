@@ -231,7 +231,7 @@ impl Component for Register {
 }
 
 fn is_valid_username(username: &str) -> bool {
-    username != ""
+    !username.is_empty()
         && username
             .chars()
             .into_iter()
