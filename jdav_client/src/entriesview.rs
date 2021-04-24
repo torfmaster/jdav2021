@@ -109,7 +109,8 @@ impl Component for EntriesView {
                 shared::Kind::Running => Palette::Info,
                 shared::Kind::Hiking => Palette::Clean,
                 shared::Kind::Skating => Palette::Danger,
-                shared::Kind::Swimming => Palette::Success
+                shared::Kind::Swimming => Palette::Success,
+                shared::Kind::NordicWalking => Palette::Secondary,
             };
             html! {
                 <Item layouts=vec!(ItemLayout::ItM(3))>

@@ -20,6 +20,7 @@ pub fn routes(
         .or(create_swimming_entry(db.clone()))
         .or(create_skating_entry(db.clone()))
         .or(create_hiking_entry(db.clone()))
+        .or(create_nordic_walking_entry(db.clone()))
         .or(edit_kilometer_entry(db.clone()))
         .or(get_entries_for_user(db.clone()))
         .or(get_highscore(db))
@@ -111,6 +112,18 @@ fn create_hiking_entry(
     db: Database,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("distanz" / String / "wandern")
+        .and(warp::put())
+        .and(warp::any().map(|| Kind::Hiking))
+        .and(authentication_middleware())
+        .and(json_kilometer_entry())
+        .and(with_database(db))
+        .and_then(handlers::create_kilometer_entry)
+}
+
+fn create_nordic_walking_entry(
+    db: Database,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("distanz" / String / "nordic_walking")
         .and(warp::put())
         .and(warp::any().map(|| Kind::Hiking))
         .and(authentication_middleware())
