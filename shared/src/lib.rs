@@ -46,6 +46,7 @@ pub enum Kind {
     Skating,
     Hiking,
     Swimming,
+    NordicWalking,
 }
 
 impl Kind {
@@ -57,6 +58,7 @@ impl Kind {
             Kind::Skating => 0.75,
             Kind::Hiking => 2.0,
             Kind::Swimming => 10.0,
+            Kind::NordicWalking => 1.5,
         }
     }
 
@@ -68,6 +70,7 @@ impl Kind {
             Kind::Skating => "skaten",
             Kind::Hiking => "wandern",
             Kind::Swimming => "schwimmen",
+            Kind::NordicWalking => "nordic_walking",
         }
         .to_owned()
     }
@@ -80,6 +83,7 @@ impl Kind {
             "skaten" => Some(Kind::Skating),
             "schwimmen" => Some(Kind::Swimming),
             "wandern" => Some(Kind::Hiking),
+            "nordic_walking" => Some(Kind::NordicWalking),
             _ => None,
         }
     }
@@ -94,6 +98,7 @@ impl fmt::Display for Kind {
             Kind::Skating => write!(f, "Skaten"),
             Kind::Hiking => write!(f, "Wandern"),
             Kind::Swimming => write!(f, "Schwimmen"),
+            Kind::NordicWalking => write!(f, "Nordic Walking"),
         }
     }
 }

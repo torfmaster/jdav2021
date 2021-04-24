@@ -124,6 +124,7 @@ impl Component for EditEntry {
                     <option value={Kind::Hiking.get_path()}>{"Wandern"}</option>
                     <option value={Kind::Swimming.get_path()}>{"Schwimmen"}</option>
                     <option value={Kind::Skating.get_path()}>{"Skaten"}</option>
+                    <option value={Kind::NordicWalking.get_path()}>{"Nordic Walking"}</option>
                     </>
                 }
             />
