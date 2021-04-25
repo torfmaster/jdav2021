@@ -11,6 +11,8 @@ use yew_styles::styles::Palette;
 use yew_styles::styles::Style;
 use yew_styles::{card::Card, styles::Size};
 
+use yew_styles::layouts::container::{Container, Direction, Wrap};
+
 #[derive(Clone, Properties, PartialEq)]
 pub struct OverviewProps {
     pub auth: UserAuth,
@@ -80,7 +82,7 @@ impl Component for Overview {
         let close_action = self.link.callback(|_| Msg::CloseAction);
 
         let entry = html! {
-        <div>
+        <div class="scrolllist">
         <Card
             card_size=Size::Small
             card_palette=Palette::Success
@@ -109,7 +111,7 @@ impl Component for Overview {
             body=html!{<h1>{"Highscore"}</h1>}
             onclick_signal=self.link.callback(move |_| Msg::OpenHighScore )
         />
-        
+
         </div>
         };
 

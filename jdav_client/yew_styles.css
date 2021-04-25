@@ -1,22 +1,3 @@
-* {
-  font-family: Helvetica;
-}
-
-.scrolllist {
-  overflow-y: scroll;
-  height: 60vh;
-}
-
-.bg {
-  background-image: url("logo1.png");
-
-  width: 100%;
-
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-}
-
 .button {
   padding: 5px 10px;
   border: none;
