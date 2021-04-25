@@ -125,7 +125,7 @@ fn create_nordic_walking_entry(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("distanz" / String / "nordic_walking")
         .and(warp::put())
-        .and(warp::any().map(|| Kind::Hiking))
+        .and(warp::any().map(|| Kind::NordicWalking))
         .and(authentication_middleware())
         .and(json_kilometer_entry())
         .and(with_database(db))
