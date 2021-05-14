@@ -4,8 +4,8 @@ use api::login::LoginRequest;
 use overview::OverviewRoute;
 use shared::UserAuth;
 use web_sys::MouseEvent;
-use yew::InputData;
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
+use yew::{services::ConsoleService, InputData};
 use yew_router::agent::{RouteAgentDispatcher, RouteRequest};
 use yew_router::prelude::*;
 use yew_router::router::Router;
@@ -44,21 +44,22 @@ enum Msg {
     Navigate(MainRoute),
 }
 
-enum AppState {
-    LoggedOut(UserAuth),
-    LoggedIn(UserAuth),
+#[derive(Clone, Default)]
+struct AppState {
+    logged_in: bool,
+    user_auth: UserAuth,
 }
 
-#[derive(Switch, Clone, Debug)]
+#[derive(Switch, Clone, Debug, PartialEq)]
 pub enum MainRoute {
     #[to = "/register"]
     Registration,
     #[to = "/overview{*:inner}"]
     Overview(OverviewRoute),
-    #[to = "/"]
-    Login,
     #[to = "/login_failed"]
     LoginFailed,
+    #[to = "/"]
+    Login,
 }
 
 struct Model {
@@ -78,43 +79,29 @@ impl Component for Model {
         Model {
             api: Default::default(),
             link,
-            state: AppState::LoggedOut(Default::default()),
             router,
+            state: Default::default(),
         }
     }
 
     fn update(&mut self, message: Self::Message) -> bool {
         match message {
             Msg::SetUserField(username) => {
-                if let AppState::LoggedOut(ref user_auth) = self.state {
-                    self.state = AppState::LoggedOut(UserAuth {
-                        name: username,
-                        ..user_auth.clone()
-                    });
-                }
-                false
+                self.state.user_auth.name = username;
+                true
             }
             Msg::SetPasswordField(password) => {
-                if let AppState::LoggedOut(ref user_auth) = self.state {
-                    self.state = AppState::LoggedOut(UserAuth {
-                        pass: password,
-                        ..user_auth.clone()
-                    });
-                }
-                false
+                self.state.user_auth.pass = password;
+                true
             }
             Msg::StartLogin => {
-                if let AppState::LoggedOut(ref user_auth) = self.state {
-                    self.api.set_req(LoginRequest {
-                        payload: user_auth.clone(),
-                    });
-                    self.link.send_future(self.api.fetch(Msg::SetApiFetchState));
-                    self.link
-                        .send_message(Msg::SetApiFetchState(FetchAction::Fetching));
-                    false
-                } else {
-                    false
-                }
+                self.api.set_req(LoginRequest {
+                    payload: self.state.user_auth.clone(),
+                });
+                self.link.send_future(self.api.fetch(Msg::SetApiFetchState));
+                self.link
+                    .send_message(Msg::SetApiFetchState(FetchAction::Fetching));
+                false
             }
             Msg::Nothing => false,
             Msg::SetApiFetchState(fetch_state) => {
@@ -133,28 +120,20 @@ impl Component for Model {
                 true
             }
             Msg::FinalizeLogin => {
-                if let AppState::LoggedOut(ref username) = self.state {
-                    self.state = AppState::LoggedIn(username.to_owned());
-                    self.link
-                        .send_message(Msg::Navigate(MainRoute::Overview(OverviewRoute::Overview)));
-                    true
-                } else {
-                    false
-                }
+                self.state.logged_in = true;
+                self.link
+                    .send_message(Msg::Navigate(MainRoute::Overview(OverviewRoute::Overview)));
+                true
             }
-            Msg::Navigate(location) => {
-                self.router.send(RouteRequest::ChangeRoute(location.into()));
+            Msg::Navigate(ref location) => {
+                self.router
+                    .send(RouteRequest::ChangeRoute(location.clone().into()));
                 true
             }
         }
     }
 
     fn view(&self) -> Html {
-        let goto_overview = self.link.callback(|event: MouseEvent| {
-            event.prevent_default();
-            Msg::Navigate(MainRoute::Overview(OverviewRoute::Overview))
-        });
-
         let goto_registration = self.link.callback(|event: MouseEvent| {
             event.prevent_default();
             Msg::Navigate(MainRoute::Registration)
@@ -165,14 +144,7 @@ impl Component for Model {
             Msg::Navigate(MainRoute::Login)
         });
 
-        let goto_login_failed = self.link.callback(|event: MouseEvent| {
-            event.prevent_default();
-            Msg::Navigate(MainRoute::Login)
-        });
-
-        let navigate_to = self
-            .link
-            .callback(move |route: MainRoute| Msg::Navigate(route.clone()));
+        let navigate_to = self.link.callback(Msg::Navigate);
 
         let entry = html! {
         <div class="body-content">
@@ -242,51 +214,61 @@ impl Component for Model {
             >{"Schade..."}
             </Button>
         };
+
+        let login_failed_modal = html! {
+            <Modal
+                header=html!{
+                    <b>{"Login fehlgeschlagen"}</b>
+                }
+                header_palette=Palette::Danger
+                body=login_failed_body
+                body_style=Style::Outline
+                body_palette=Palette::Danger
+                is_open=true
+                onclick_signal= self.link.callback(|_|  Msg::Nothing )
+                onkeydown_signal= self.link.callback(|_|  Msg::Nothing)
+                auto_focus=false
+                class_name = "bg"
+            />
+        };
+
         let close_action = self
             .link
             .callback(move |_| Msg::Navigate(OverviewRoute::Overview.into()));
 
-        match &self.state {
-            AppState::LoggedOut(_) => {
-                html! {
-                    <Router<MainRoute>
-                        render=Router::render(move |switch: MainRoute| {
-                            match switch {
-                                MainRoute::Registration => {
-                                    html! {
-                                        <Register close_action={close_action.clone()}/>
-                                    }
-                                }
-                                _ => login_modal.clone(),
+        let user_auth = self.state.user_auth.clone();
+        let logged_in = self.state.logged_in;
+
+        html! {
+            <Router<MainRoute>
+                render=Router::render(move |switch: MainRoute| {
+                    match switch {
+                        MainRoute::Registration => {
+                            html! {
+                                <Register close_action={close_action.clone()}/>
                             }
-                        })
-                        redirect = Router::redirect(|_: Route| {
-                            MainRoute::Overview(OverviewRoute::Overview)
-                        })
-                    />
-                }
-            }
-            AppState::LoggedIn(user_auth) => {
-                let user_auth = user_auth.clone();
-                html! {
-                    <Router<MainRoute>
-                        render=Router::render(move |switch: MainRoute| {
-                            match switch {
-                                MainRoute::Overview(overview_route) => {
-                                    let overview_route = overview_route.clone();
-                                    html! {
-                                        <Overview auth={user_auth.clone()} navigate={navigate_to.clone()} route={overview_route}/>
-                                    }
+                        }
+                        MainRoute::Overview(overview_route) => {
+                            let overview_route = overview_route.clone();
+                            if logged_in {
+                                html! {
+                                    <Overview auth={user_auth.clone()} navigate={navigate_to.clone()} route={overview_route}/>
                                 }
-                                _ => login_modal.clone(),
+                            } else {
+                                login_failed_modal.clone()
                             }
-                        })
-                        redirect = Router::redirect(|_: Route| {
-                            MainRoute::Overview(OverviewRoute::Overview)
-                        })
-                    />
-                }
-            }
+
+                        }
+                        MainRoute::LoginFailed => {
+                            login_failed_modal.clone()
+                        }
+                        _ => login_modal.clone(),
+                    }
+                })
+                redirect = Router::redirect(|_: Route| {
+                    MainRoute::Login
+                })
+            />
         }
     }
 
