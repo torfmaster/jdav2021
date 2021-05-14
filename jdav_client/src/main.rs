@@ -232,9 +232,7 @@ impl Component for Model {
             />
         };
 
-        let close_action = self
-            .link
-            .callback(move |_| Msg::Navigate(OverviewRoute::Overview.into()));
+        let close_action = self.link.callback(move |_| Msg::Navigate(MainRoute::Login));
 
         let user_auth = self.state.user_auth.clone();
         let logged_in = self.state.logged_in;
