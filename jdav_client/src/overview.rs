@@ -1,28 +1,45 @@
 use shared::UserAuth;
-use yew::Properties;
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
+use yew::{Callback, Properties};
 
-use crate::entriesview::EntriesView;
 use crate::highscoreview::HighscoreView;
 use crate::infoview::InfoView;
 use crate::new_entry::NewEntry;
+use crate::{entriesview::EntriesView, MainRoute};
+use yew_router::Switch;
 use yew_styles::modal::Modal;
 use yew_styles::styles::Palette;
 use yew_styles::styles::Style;
 use yew_styles::{card::Card, styles::Size};
 
-use yew_styles::layouts::container::{Container, Direction, Wrap};
+#[derive(Switch, Clone, Debug, PartialEq)]
+pub enum OverviewRoute {
+    #[to = "/highscore"]
+    HighScore,
+    #[to = "/new_entry"]
+    NewEntry,
+    #[to = "/edit_entry"]
+    EditEntries,
+    #[to = "/info"]
+    Info,
+    #[to = "/"]
+    Overview,
+}
+
+impl Into<MainRoute> for OverviewRoute {
+    fn into(self) -> MainRoute {
+        MainRoute::Overview(self)
+    }
+}
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct OverviewProps {
     pub auth: UserAuth,
+    pub route: OverviewRoute,
+    pub navigate: Callback<MainRoute>,
 }
 pub enum Msg {
-    OpenNewEntry,
-    OpenHighScore,
-    OpenEntriesView,
-    OpenInfoView,
-    CloseAction,
+    Navigate(MainRoute),
     Nothing,
 }
 
@@ -54,32 +71,21 @@ impl Component for Overview {
 
     fn update(&mut self, message: Self::Message) -> bool {
         match message {
-            Msg::OpenNewEntry => {
-                self.current_action = CurrentAction::NewEntry;
-                true
+            Msg::Navigate(location) => {
+                self.props.navigate.emit(location.into());
+                false
             }
             Msg::Nothing => false,
-            Msg::CloseAction => {
-                self.current_action = CurrentAction::Nothing;
-                true
-            }
-            Msg::OpenHighScore => {
-                self.current_action = CurrentAction::HighScore;
-                true
-            }
-            Msg::OpenEntriesView => {
-                self.current_action = CurrentAction::EntriesView;
-                true
-            }
-            Msg::OpenInfoView => {
-                self.current_action = CurrentAction::InfoView;
-                true
-            }
         }
     }
 
     fn view(&self) -> Html {
-        let close_action = self.link.callback(|_| Msg::CloseAction);
+        let navigate_to =
+            |location: MainRoute| self.link.callback(move |_| Msg::Navigate(location.clone()));
+
+        let close_action = self
+            .link
+            .callback(move |_| Msg::Navigate(OverviewRoute::Overview.into()));
 
         let entry = html! {
         <div class="scrolllist">
@@ -88,28 +94,28 @@ impl Component for Overview {
             card_palette=Palette::Success
             card_style=Style::Outline
             body=html!{<h1>{"Neuer Eintrag"}</h1>}
-            onclick_signal=self.link.callback(move |_| Msg::OpenNewEntry )
+            onclick_signal={navigate_to(OverviewRoute::NewEntry.into())}
         />
         <Card
             card_size=Size::Small
             card_palette=Palette::Success
             card_style=Style::Outline
             body=html!{<h1>{"Meine Einträge"}</h1>}
-            onclick_signal=self.link.callback(move |_| Msg::OpenEntriesView )
+            onclick_signal={navigate_to(OverviewRoute::EditEntries.into())}
         />
         <Card
             card_size=Size::Small
             card_palette=Palette::Success
             card_style=Style::Outline
             body=html!{<h1>{"Info"}</h1>}
-            onclick_signal=self.link.callback(move |_| Msg::OpenInfoView )
+            onclick_signal={navigate_to(OverviewRoute::Info.into())}
         />
         <Card
             card_size=Size::Small
             card_palette=Palette::Success
             card_style=Style::Outline
             body=html!{<h1>{"Highscore"}</h1>}
-            onclick_signal=self.link.callback(move |_| Msg::OpenHighScore )
+            onclick_signal={navigate_to(OverviewRoute::HighScore.into())}
         />
 
         </div>
@@ -132,9 +138,9 @@ impl Component for Overview {
         />
         };
 
-        match self.current_action {
-            CurrentAction::Nothing => overview_modal,
-            CurrentAction::NewEntry => {
+        match self.props.route {
+            OverviewRoute::Overview => overview_modal,
+            OverviewRoute::NewEntry => {
                 html! {
                     <NewEntry
                       auth={
@@ -143,7 +149,7 @@ impl Component for Overview {
                     />
                 }
             }
-            CurrentAction::HighScore => {
+            OverviewRoute::HighScore => {
                 html! {
                     <HighscoreView
                       auth={self.props.auth.clone()}
@@ -151,7 +157,7 @@ impl Component for Overview {
                     />
                 }
             }
-            CurrentAction::EntriesView => {
+            OverviewRoute::EditEntries => {
                 html! {
                     <EntriesView
                       auth={self.props.auth.clone()}
@@ -159,7 +165,7 @@ impl Component for Overview {
                     />
                 }
             }
-            CurrentAction::InfoView => {
+            OverviewRoute::Info => {
                 html! {
                     <InfoView
                         close_action={close_action}
@@ -169,7 +175,9 @@ impl Component for Overview {
         }
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        false
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        let has_changed = self.props != props;
+        self.props = props;
+        has_changed
     }
 }
